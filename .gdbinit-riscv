@@ -1,0 +1,8 @@
+
+echo + target remote localhost:26000\n
+target remote localhost:26000
+
+echo + symbol-file obj/boot/boot.out
+
+add-symbol-file obj/boot/boot.out
+add-symbol-file opensbi/fw_jump.elf
