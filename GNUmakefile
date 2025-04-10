@@ -105,6 +105,7 @@ CFLAGS += -static
 CFLAGS += -Wall -Wno-format -Wno-unused -Werror
 ifeq ($(ARCH), riscv)
 CFLAGS += -mabi=lp64 -march=rv64imafdc_zicsr_zifencei -mcmodel=medany
+CFLAGS += -fno-pic
 else
 CFLAGS += -m32 
 CFLAGS += gstabs
@@ -125,7 +126,7 @@ CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 &
 
 ifeq ($(ARCH),riscv)
 # Common linker flags
-LDFLAGS := 
+LDFLAGS := -m elf64lriscv
 else
 LDFLAGS := -m elf_i386
 endif
@@ -171,7 +172,7 @@ $(OBJDIR)/.vars.%: FORCE
 
 # Include Makefrags for subdirectories
 include boot/arch/$(ARCH)/Makefrag
-#include kern/Makefrag
+include kern/$(ARCH)/Makefrag
 #include lib/Makefrag
 #include user/Makefrag
 #include fs/Makefrag
@@ -185,9 +186,10 @@ ifeq ($(ARCH), riscv)
 QEMUOPTS = -M virt -m 1G -serial mon:stdio
 QEMUOPTS += $(shell if $(QEMU) -nographic -help | grep -q '^-D '; then echo '-D qemu.log'; fi)
 QEMUOPTS += -smp $(CPUS)
-QEMUOPTS += -drive if=pflash,unit=0,format=raw,file=$(OBJDIR)/boot/flash.img 
+QEMUOPTS += -bios $(TOP)/opensbi/fw_jump.bin
+QEMUOPTS += -drive if=pflash,unit=0,format=raw,file=$(OBJDIR)/kern/kernel.img 
 
-IMAGES = $(OBJDIR)/boot/flash.img
+IMAGES = $(OBJDIR)/kern/kernel.img
 
 else
 PORT7	:= $(shell expr $(GDBPORT) + 1)

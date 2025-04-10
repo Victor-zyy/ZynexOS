@@ -2,8 +2,8 @@
 #define JOS_INC_MEMLAYOUT_H
 
 #ifndef __ASSEMBLER__
-#include <inc/types.h>
-#include <inc/mmu.h>
+#include <riscv/types.h>
+#include <riscv/mmu.h>
 #endif /* not __ASSEMBLER__ */
 
 /*
@@ -11,18 +11,17 @@
  * which are relevant to both the kernel and user-mode software.
  */
 
-// Global descriptor numbers
-#define GD_KT     0x08     // kernel text
-#define GD_KD     0x10     // kernel data
-#define GD_UT     0x18     // user text
-#define GD_UD     0x20     // user data
-#define GD_TSS0   0x28     // Task segment selector for CPU 0
-
 /*
  * Virtual memory map:                                Permissions
  *                                                    kernel/user
- *
- *    4 Gig -------->  +------------------------------+
+ *  sv48 mode
+ *  0xffff000000000000 - 0xffffffffffffffff   for kernel space
+ *  0x0000000000000000 - 0x0000ffffffffffff   for user space
+ *  physical memory map
+ *  0x80000000    -    0x80200000    for opensbi
+ *  0x82200000    -    0x82280000    for dtb
+ *  0x80200000    -                  for kernel
+ *    x Gig -------->  +------------------------------+
  *                     |                              | RW/--
  *                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *                     :              .               :
@@ -32,18 +31,18 @@
  *                     |                              | RW/--
  *                     |   Remapped Physical Memory   | RW/--
  *                     |                              | RW/--
- *    KERNBASE, ---->  +------------------------------+ 0xf0000000      --+
- *    KSTACKTOP        |     CPU0's Kernel Stack      | RW/--  KSTKSIZE   |
- *                     | - - - - - - - - - - - - - - -|                   |
- *                     |      Invalid Memory (*)      | --/--  KSTKGAP    |
- *                     +------------------------------+                   |
- *                     |     CPU1's Kernel Stack      | RW/--  KSTKSIZE   |
- *                     | - - - - - - - - - - - - - - -|                 PTSIZE
- *                     |      Invalid Memory (*)      | --/--  KSTKGAP    |
- *                     +------------------------------+                   |
- *                     :              .               :                   |
- *                     :              .               :                   |
- *    MMIOLIM ------>  +------------------------------+ 0xefc00000      --+
+ *    KERNBASE, ---->  +------------------------------+ 0xffff ffff 0000 0000      --+
+ *    KSTACKTOP        |     CPU0's Kernel Stack      | RW/--  KSTKSIZE              |
+ *                     | - - - - - - - - - - - - - - -|                              |
+ *                     |      Invalid Memory (*)      | --/--  KSTKGAP               |
+ *                     +------------------------------+                              |
+ *                     |     CPU1's Kernel Stack      | RW/--  KSTKSIZE              |
+ *                     | - - - - - - - - - - - - - - -|                            PTSIZE
+ *                     |      Invalid Memory (*)      | --/--  KSTKGAP               |
+ *                     +------------------------------+                              |
+ *                     :              .               :                              |
+ *                     :              .               :                              |
+ *    MMIOLIM ------>  +------------------------------+ 0xffffffff 00000000       ---+
  *                     |       Memory-mapped I/O      | RW/--  PTSIZE
  * ULIM, MMIOBASE -->  +------------------------------+ 0xef800000
  *                     |  Cur. Page Table (User R-)   | R-/R-  PTSIZE
@@ -66,16 +65,16 @@
  *                     .                              .
  *                     |~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|
  *                     |     Program Data & Heap      |
- *    UTEXT -------->  +------------------------------+ 0x00800000
+ *    UTEXT -------->  +------------------------------+ 0x00000000 00800000
  *    PFTEMP ------->  |       Empty Memory (*)       |        PTSIZE
  *                     |                              |
- *    UTEMP -------->  +------------------------------+ 0x00400000      --+
- *                     |       Empty Memory (*)       |                   |
- *                     | - - - - - - - - - - - - - - -|                   |
- *                     |  User STAB Data (optional)   |                 PTSIZE
- *    USTABDATA ---->  +------------------------------+ 0x00200000        |
- *                     |       Empty Memory (*)       |                   |
- *    0 ------------>  +------------------------------+                 --+
+ *    UTEMP -------->  +------------------------------+ 0x00000000 00400000--------+
+ *                     |       Empty Memory (*)       |                            |
+ *                     | - - - - - - - - - - - - - - -|                            |
+ *                     |  User STAB Data (optional)   |                         PTSIZE
+ *    USTABDATA ---->  +------------------------------+ 0x00000000 00200000        |
+ *                     |       Empty Memory (*)       |                            |
+ *    0 ------------>  +------------------------------+----------------------------+
  *
  * (*) Note: The kernel ensures that "Invalid Memory" is *never* mapped.
  *     "Empty Memory" is normally unmapped, but user programs may map pages
@@ -84,7 +83,7 @@
 
 
 // All physical memory mapped at this address
-#define	KERNBASE	0xF0000000
+#define	KERNBASE	0xFFFFFFFF00000000
 
 // At IOPHYSMEM (640K) there is a 384K hole for I/O.  From the kernel,
 // IOPHYSMEM can be addressed at KERNBASE + IOPHYSMEM.  The hole ends
@@ -143,8 +142,8 @@
 
 #ifndef __ASSEMBLER__
 
-typedef uint32_t pte_t;
-typedef uint32_t pde_t;
+typedef uint64_t pte_t;
+typedef uint64_t pde_t;
 
 #if JOS_USER
 /*

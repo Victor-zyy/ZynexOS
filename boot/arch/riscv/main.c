@@ -39,7 +39,7 @@
  *|----------------|-------------|------------------|---------------------------|
  **********************************************************************/
 #define BLOCKSIZE	1024 // 1KB 0x1000
-#define ELFHDR		((struct Elf *) 0x80200000) // scratch space
+#define ELFHDR		((struct Elf *) 0x801fe000) // scratch space
 #define SBI_FIRMWARE    (0x80000000)
 #define NOR_FALSH_BASE  (0x20000000)
 
@@ -65,17 +65,19 @@ bootmain(unsigned int hartid, void *fdt)
 	// load each program segment (ignores ph flags)
 	ph = (struct Proghdr *) ((uint8_t *) ELFHDR + ELFHDR->e_phoff);
 	eph = ph + ELFHDR->e_phnum;
-	for (; ph < eph; ph++)
+	for (; ph < eph; ph++){
 		// p_pa is the load address of this segment (as well
 		// as the physical address)
-		readblock(ph->p_pa, ph->p_memsz, ph->p_offset);
+	  if(ph->p_type == ELF_PROG_LOAD)
+	    readblock(ph->p_pa, ph->p_memsz, ph->p_offset + 0x100000);
+	}
 
 	// call the entry point from the ELF header
 	// note: does not return!
 	//((void (*)(void)) (ELFHDR->e_entry))();
+	firmware_entry(hartid, fdt);
 
 bad:
-	firmware_entry(hartid, fdt);
 	while (1)
 		/* do nothing */;
 }
@@ -104,7 +106,9 @@ readblock(unsigned long pa, unsigned long count, unsigned long offset)
 		// an identity segment mapping (see boot.S), we can
 		// use physical addresses directly.  This won't be the
 		// case once JOS enables the MMU.
-	        *(unsigned long *)pa ++ = *(unsigned long *)src++ ;
+	        *(unsigned long *)pa = *(unsigned long *)src;
+		++pa;
+		++src;
 	}
 }
 

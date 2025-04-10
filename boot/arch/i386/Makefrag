@@ -5,23 +5,23 @@
 # where the GNUmakefile is located.
 #
 
-OBJDIRS += boot
+OBJDIRS += boot/arch/i386
 
 BOOT_OBJS := $(OBJDIR)/boot/boot.o $(OBJDIR)/boot/main.o
 
-$(OBJDIR)/boot/%.o: boot/%.c
+$(OBJDIR)/boot/%.o: boot/arch/i386/%.c
 	@echo + cc -Os $<
 	@mkdir -p $(@D)
 	$(V)$(CC) -nostdinc $(KERN_CFLAGS) -Os -c -o $@ $<
 
-$(OBJDIR)/boot/%.o: boot/%.S
+$(OBJDIR)/boot/%.o: boot/arch/i386/%.S
 	@echo + as $<
 	@mkdir -p $(@D)
 	$(V)$(CC) -nostdinc $(KERN_CFLAGS) -c -o $@ $<
 
-$(OBJDIR)/boot/main.o: boot/main.c
+$(OBJDIR)/boot/main.o: boot/arch/i386/main.c
 	@echo + cc -Os $<
-	$(V)$(CC) -nostdinc $(KERN_CFLAGS) -Os -c -o $(OBJDIR)/boot/main.o boot/main.c
+	$(V)$(CC) -nostdinc $(KERN_CFLAGS) -Os -c -o $(OBJDIR)/boot/main.o boot/arch/i386/main.c
 
 $(OBJDIR)/boot/boot: $(BOOT_OBJS)
 	@echo + ld boot/boot

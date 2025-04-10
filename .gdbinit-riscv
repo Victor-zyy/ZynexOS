@@ -6,3 +6,4 @@ echo + symbol-file obj/boot/boot.out
 
 add-symbol-file obj/boot/boot.out
 add-symbol-file opensbi/fw_jump.elf
+add-symbol-file obj/kern/kernel 0x80200000
