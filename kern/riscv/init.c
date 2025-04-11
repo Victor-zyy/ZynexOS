@@ -4,6 +4,7 @@
 #include <riscv/string.h>
 #include <riscv/assert.h>
 #include <riscv/console.h>
+#include <riscv/monitor.h>
 #include <riscv/string.h>
 
 void
@@ -23,6 +24,7 @@ riscv_init(void)
 
 	cprintf("6828 decimal is %o octal!\n", 6828);
 	cprintf("Hello, ZynexOS!\n");
-	while(1);
+	while(1)
+	  monitor(NULL);
 }
 

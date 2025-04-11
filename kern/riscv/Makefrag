@@ -17,6 +17,7 @@ KERN_SRCFILES :=	kern/riscv/entry.S \
 			kern/riscv/entrypgdir.c \
 			kern/riscv/init.c \
 			kern/riscv/console.c \
+			kern/riscv/monitor.c \
 			kern/riscv/printf.c \
 			kern/riscv/sbi.c \
 			lib/riscv/printfmt.c \
