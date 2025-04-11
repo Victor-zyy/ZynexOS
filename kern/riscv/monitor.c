@@ -68,26 +68,19 @@ int
 mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 {
 	// Your code here.
-  #if 0
-	int i = 0;
-	uint32_t ebp = read_ebp();
-	uint32_t eip;
-	uint32_t args[5];
-	struct Eipdebuginfo info;
+	uint64_t fp = read_fp();
+	uint64_t ra;
 	cprintf("Stack backtrace:\n");
 	do{
-		eip = *(uint32_t *)(ebp + 4);
-		cprintf("ebp : 0x%08x\n", ebp);
-		for(i = 0; i < 5; i++){
-			args[i] = *(uint32_t *)(ebp + 4 * (i + 2));
-		}
-		cprintf("    ebp %08x eip %08x args %08x %08x %08x %08x %08x\n", ebp, eip, args[0], args[1], args[2], args[3], args[4]);
+		ra = *(uint64_t *)(fp - 8);
+		cprintf("fp : 0x%08lx  ra : 0x%08lx\n", fp, ra);
+		// 80386 use stack to pass args but riscv use regs to pass args
+		//As the riscv gcc doesn't support gstabs, so we need to fix it later!
+		//debuginfo_eip(eip, &info);
+		//cprintf("        %s:%d: %.*s+%d\n", info.eip_file, info.eip_line, info.eip_fn_namelen, info.eip_fn_name, eip - info.eip_fn_addr);
+		fp = *(uint64_t *)(fp - 16);
+	}while(fp != 0);
 
-		debuginfo_eip(eip, &info);
-		cprintf("        %s:%d: %.*s+%d\n", info.eip_file, info.eip_line, info.eip_fn_namelen, info.eip_fn_name, eip - info.eip_fn_addr);
-		ebp = *(uint32_t *)ebp;
-	}while(ebp != 0);
- #endif
 	return 0;
 }
 

@@ -76,9 +76,9 @@ jump_relocated:
 	# so that once we get into debugging C code,
 	# stack backtraces will be terminated properly.
 	# nuke frame pointer ;FIXME: fp pointer
-
+	mv	fp, zero
 	# reset the stack
-	la     t0, bootstacktop
+	la     	t0, bootstacktop
 	add	sp, t0, zero
 
 	# now to C code
