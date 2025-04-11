@@ -7,6 +7,16 @@
 #include <riscv/monitor.h>
 #include <riscv/string.h>
 
+#define BANNER						     \
+     "   ______                            _____  _____  \n" \
+     "  |___  /                           |  _  |/  ___| \n" \
+     "     / /  _   _  _ __    ___ __  __ | | | |\\ `--.  \n" \
+     "    / /  | | | || '_ \\  / _ \\\\ \\/ / | | | | `--. \\ \n" \
+     "  ./ /___| |_| || | | ||  __/ >  <  \\ \\_/ //\\__/ / \n" \
+     "  \\_____/ \\__, ||_| |_| \\___|/_/\\_\\  \\___/ \\____/  \n" \
+     "          __/ |                                    \n" \
+     "          |___/                              \n\n"
+
 void
 riscv_init(void)
 {
@@ -24,6 +34,7 @@ riscv_init(void)
 
 	cprintf("6828 decimal is %o octal!\n", 6828);
 	cprintf("Hello, ZynexOS!\n");
+	cprintf(BANNER);
 	while(1)
 	  monitor(NULL);
 }

@@ -73,7 +73,7 @@ mon_backtrace(int argc, char **argv, struct Trapframe *tf)
 	cprintf("Stack backtrace:\n");
 	do{
 		ra = *(uint64_t *)(fp - 8);
-		cprintf("fp : 0x%08lx  ra : 0x%08lx\n", fp, ra);
+		cprintf("fp : 0x%08lx  ra/pc : 0x%08lx\n", fp, ra);
 		// 80386 use stack to pass args but riscv use regs to pass args
 		//As the riscv gcc doesn't support gstabs, so we need to fix it later!
 		//debuginfo_eip(eip, &info);
