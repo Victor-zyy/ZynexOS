@@ -21,15 +21,22 @@ SECTIONS
 		*(.rodata .rodata.* .gnu.linkonce.r.*)
 	}
 
+  	. = ALIGN(4);
+    	.got : {
+    	 __got_start = .;
+    	  *(.got.plt) *(.got)
+     	  __got_end = .;
+        }
 
 	/* Adjust the address for the data segment to the next page */
 	. = ALIGN(0x1000);
 
+ 
 	/* The data segment */
 	.data : {
-		*(.data)
+		*(.data) *(.data.rel.ro*)
 	}
-
+ 
 	PROVIDE(edata = .);
 
 	.bss : {

@@ -68,11 +68,8 @@ entry:
 	sfence.vma
 	csrw    CSR_SATP, t0
 
-	la 	t0, kernel_base
-	ld	a1, 0(t0)
 	la  	a2, jump_relocated
-	add	t0, a1, a2
-	jr 	t0
+	jr 	a2
 jump_relocated:	
 	
 	# Clear the frame pointer register (EBP)

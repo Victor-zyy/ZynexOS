@@ -46,21 +46,21 @@ mon_help(int argc, char **argv, struct Trapframe *tf)
 	return 0;
 }
 
+#define	RELOC(x) ((x) - KERNBASE)
 int
 mon_kerninfo(int argc, char **argv, struct Trapframe *tf)
 {
 	extern char _start[], entry[], etext[], edata[], end[];
 
+	//cprintf("  _start                  %08x (phys)\n", _start);
 	cprintf("Special kernel symbols:\n");
-	#if 0
-	cprintf("  _start                  %08x (phys)\n", _start);
-	cprintf("  entry  %08x (virt)  %08x (phys)\n", entry, entry - KERNBASE);
-	cprintf("  etext  %08x (virt)  %08x (phys)\n", etext, etext - KERNBASE);
-	cprintf("  edata  %08x (virt)  %08x (phys)\n", edata, edata - KERNBASE);
-	cprintf("  end    %08x (virt)  %08x (phys)\n", end, end - KERNBASE);
+	cprintf("  _start                          %08x (phys)\n", _start);
+	cprintf("  entry  %08lx (virt)  %08x (phys)\n", entry, entry - KERNBASE);
+	cprintf("  etext  %08lx (virt)  %08x (phys)\n", etext, etext - KERNBASE);
+	cprintf("  edata  %08lx (virt)  %08x (phys)\n", edata, edata - KERNBASE);
+	cprintf("  end    %08lx (virt)  %08x (phys)\n", end, end - KERNBASE);
 	cprintf("Kernel executable memory footprint: %dKB\n",
 		ROUNDUP(end - entry, 1024) / 1024);
-	#endif
 	return 0;
 }
 
@@ -257,15 +257,19 @@ runcmd(char *buf, struct Trapframe *tf)
 	if (argc == 0)
 		return 0;
 	for (i = 0; i < ARRAY_SIZE(commands); i++) {
-		if (strcmp(argv[0], commands[i].name) == 0)
-			return commands[i].func(argc, argv, tf);
+	  if (strcmp(argv[0], commands[i].name) == 0){
+	    return commands[i].func(argc, argv, tf);
+	  }
 	}
 	cprintf("Unknown command '%s'\n", argv[0]);
 	return 0;
 }
-void print_trapframe(struct Trapframe *tf){
+
+void
+print_trapframe(struct Trapframe *tf){
   tf = tf;
 }
+
 void
 monitor(struct Trapframe *tf)
 {

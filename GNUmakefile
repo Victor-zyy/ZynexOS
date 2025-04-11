@@ -105,7 +105,7 @@ CFLAGS += -static
 CFLAGS += -Wall -Wno-format -Wno-unused -Werror
 ifeq ($(ARCH), riscv)
 CFLAGS += -mabi=lp64 -march=rv64imafdc_zicsr_zifencei -mcmodel=medany
-CFLAGS += -fno-pic
+#CFLAGS += -fno-pic
 else
 CFLAGS += -m32 
 CFLAGS += gstabs
