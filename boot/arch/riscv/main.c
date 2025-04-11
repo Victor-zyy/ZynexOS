@@ -1,4 +1,5 @@
 #include <riscv/riscv.h>
+#include <riscv/types.h>
 #include <riscv/elf.h>
 
 /**********************************************************************

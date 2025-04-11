@@ -15,7 +15,13 @@ KERN_LDFLAGS := $(LDFLAGS) -T kern/riscv/kernel.ld -nostdlib
 # from the lib directory, to avoid gratuitous code duplication.
 KERN_SRCFILES :=	kern/riscv/entry.S \
 			kern/riscv/entrypgdir.c \
-			kern/riscv/init.c 
+			kern/riscv/init.c \
+			kern/riscv/console.c \
+			kern/riscv/printf.c \
+			kern/riscv/sbi.c \
+			lib/riscv/printfmt.c \
+			lib/riscv/readline.c \
+			lib/riscv/string.c
 
 # Only build files if they exist.
 KERN_SRCFILES := $(wildcard $(KERN_SRCFILES))
@@ -23,6 +29,8 @@ KERN_SRCFILES := $(wildcard $(KERN_SRCFILES))
 
 KERN_OBJFILES := $(patsubst %.c, $(OBJDIR)/kern/%.o, $(notdir $(KERN_SRCFILES)))
 KERN_OBJFILES := $(patsubst %.S, $(OBJDIR)/kern/%.o, $(KERN_OBJFILES))
+
+KERN_OBJFILES := $(patsubst $(OBJDIR)/lib/%, $(OBJDIR)/kern/%, $(KERN_OBJFILES))
 
 # How to build kernel object files
 $(OBJDIR)/kern/%.o: kern/riscv/%.c $(OBJDIR)/.vars.KERN_CFLAGS
@@ -35,6 +43,11 @@ $(OBJDIR)/kern/%.o: kern/riscv/%.S $(OBJDIR)/.vars.KERN_CFLAGS
 	@mkdir -p $(@D)
 	$(V)$(CC) -nostdinc $(KERN_CFLAGS) -c -o $@ $<
 
+
+$(OBJDIR)/kern/%.o: lib/riscv/%.c $(OBJDIR)/.vars.KERN_CFLAGS
+	@echo + cc $<
+	@mkdir -p $(@D)
+	$(V)$(CC) -nostdinc $(KERN_CFLAGS) -c -o $@ $<
 
 # Special flags for kern/init
 $(OBJDIR)/kern/init.o: override KERN_CFLAGS+=$(INIT_CFLAGS)

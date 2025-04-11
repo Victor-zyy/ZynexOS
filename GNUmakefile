@@ -120,6 +120,7 @@ CFLAGS += -fno-tree-ch
 	  -I$(TOP)/net/lwip/include/ipv4 \
 	  -I$(TOP)/net/lwip/jos
 CFLAGS += -I$(TOP)/inc/
+CFLAGS += -I$(TOP)/kern/
 
 # Add -fno-stack-protector if the option exists.
 CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
@@ -173,7 +174,7 @@ $(OBJDIR)/.vars.%: FORCE
 # Include Makefrags for subdirectories
 include boot/arch/$(ARCH)/Makefrag
 include kern/$(ARCH)/Makefrag
-#include lib/Makefrag
+include lib/$(ARCH)/Makefrag
 #include user/Makefrag
 #include fs/Makefrag
 #include net/Makefrag

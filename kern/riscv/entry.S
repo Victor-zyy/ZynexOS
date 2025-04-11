@@ -80,6 +80,10 @@ jump_relocated:
 	# stack backtraces will be terminated properly.
 	# nuke frame pointer ;FIXME: fp pointer
 
+	# reset the stack
+	la     t0, bootstacktop
+	add	sp, t0, zero
+
 	# now to C code
 	call	riscv_init
 

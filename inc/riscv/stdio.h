@@ -1,7 +1,7 @@
 #ifndef JOS_INC_STDIO_H
 #define JOS_INC_STDIO_H
 
-#include <inc/stdarg.h>
+#include <riscv/stdarg.h>
 
 #ifndef NULL
 #define NULL	((void *) 0)

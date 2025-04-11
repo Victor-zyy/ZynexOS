@@ -38,19 +38,19 @@ pde_t entry_pgdir22[NPDENTRIES];
 // error: initializer is not constant
 // solution: align the entry of PGSIZE, then the lower bits 12 will be zero
 __attribute__((__aligned__(PGSIZE)))
-pde_t entry_pgdir0[NPDENTRIES] = { 0 };
+pde_t entry_pgdir0[NPDENTRIES] = { 0xff };
 
 __attribute__((__aligned__(PGSIZE)))
-pde_t entry_pgdir1[NPDENTRIES] = { 0 };
+pde_t entry_pgdir1[NPDENTRIES] = { 0xff };
 
 __attribute__((__aligned__(PGSIZE)))
-pde_t entry_pgdir11[NPDENTRIES] = { 0 };
+pde_t entry_pgdir11[NPDENTRIES] = { 0xff };
 
 __attribute__((__aligned__(PGSIZE)))
-pde_t entry_pgdir2[NPDENTRIES] = { 0 };
+pde_t entry_pgdir2[NPDENTRIES] = { 0xff };
 
 __attribute__((__aligned__(PGSIZE)))
-pde_t entry_pgdir22[NPDENTRIES] = { 0 };
+pde_t entry_pgdir22[NPDENTRIES] = { 0xff };
 // Entry 0 of the page table maps to physical page 0, entry 1 to
 // physical page 1, etc.
 __attribute__((__aligned__(PGSIZE)))
