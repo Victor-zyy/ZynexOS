@@ -50,3 +50,56 @@ int sbi_console_getchar(void)
 
 	return ret.error;
 }
+
+
+/**
+ * sbi_firmware_getstart() - Gets opensbi firmware start address
+ *
+ * Returns the value of the address.
+ */
+long sbi_firmware_getstart(void)
+{
+	struct sbiret ret;
+	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_FIRMWARE_START, 0, 0, 0, 0, 0, 0);
+
+	return ret.value;
+}
+
+/**
+ * sbi_firmware_getend() - Gets opensbi firmware end address
+ *
+ * Returns the value of the address.
+ */
+long sbi_firmware_getend(void)
+{
+	struct sbiret ret;
+	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_FIRMWARE_END, 0, 0, 0, 0, 0, 0);
+
+	return ret.value;
+}
+
+/**
+ * sbi_mem_getstart() - Gets opensbi firmware start address
+ *
+ * Returns the value of the address.
+ */
+long sbi_mem_getstart(void)
+{
+	struct sbiret ret;
+	ret = sbi_ecall(SBI_EXT_BASE,SBI_EXT_BASE_GET_MEMSTART, 0, 0, 0, 0, 0, 0);
+
+	return ret.value;
+}
+
+/**
+ * sbi_firmware_getend() - Gets opensbi firmware end address
+ *
+ * Returns the value of the address.
+ */
+long sbi_mem_getsize(void)
+{
+	struct sbiret ret;
+	ret = sbi_ecall(SBI_EXT_BASE, SBI_EXT_BASE_GET_MEMSIZE, 0, 0, 0, 0, 0, 0);
+
+	return ret.value;
+}

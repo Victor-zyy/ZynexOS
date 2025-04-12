@@ -37,26 +37,26 @@
  *                     |      Invalid Memory (*)      | --/--  KSTKGAP               |
  *                     +------------------------------+                              |
  *                     |     CPU1's Kernel Stack      | RW/--  KSTKSIZE              |
- *                     | - - - - - - - - - - - - - - -|                            PTSIZE
+ *                     | - - - - - - - - - - - - - - -|                            PTSIZE  4MB
  *                     |      Invalid Memory (*)      | --/--  KSTKGAP               |
  *                     +------------------------------+                              |
  *                     :              .               :                              |
  *                     :              .               :                              |
- *    MMIOLIM ------>  +------------------------------+ 0xffffffff 00000000       ---+
+ *    MMIOLIM ------>  +------------------------------+ 0xfffffffe efc00000       ---+
  *                     |       Memory-mapped I/O      | RW/--  PTSIZE
- * ULIM, MMIOBASE -->  +------------------------------+ 0xef800000
+ * ULIM, MMIOBASE -->  +------------------------------+ 0xffffffff ef800000
  *                     |  Cur. Page Table (User R-)   | R-/R-  PTSIZE
- *    UVPT      ---->  +------------------------------+ 0xef400000
+ *    UVPT      ---->  +------------------------------+ 0xffffffff ef400000
  *                     |          RO PAGES            | R-/R-  PTSIZE
- *    UPAGES    ---->  +------------------------------+ 0xef000000
+ *    UPAGES    ---->  +------------------------------+ 0xffffffff ef000000
  *                     |           RO ENVS            | R-/R-  PTSIZE
- * UTOP,UENVS ------>  +------------------------------+ 0xeec00000
+ * UTOP,UENVS ------>  +------------------------------+ 0xffffffff eec00000
  * UXSTACKTOP -/       |     User Exception Stack     | RW/RW  PGSIZE
- *                     +------------------------------+ 0xeebff000
+ *                     +------------------------------+ 0xffffffff eebff000
  *                     |       Empty Memory (*)       | --/--  PGSIZE
- *    USTACKTOP  --->  +------------------------------+ 0xeebfe000
+ *    USTACKTOP  --->  +------------------------------+ 0xffffffff eebfe000
  *                     |      Normal User Stack       | RW/RW  PGSIZE
- *                     +------------------------------+ 0xeebfd000
+ *                     +------------------------------+ 0xffffffff eebfd000
  *                     |                              |
  *                     |                              |
  *                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -84,12 +84,6 @@
 
 // All physical memory mapped at this address
 #define	KERNBASE	0xFFFFFFFF00000000
-
-// At IOPHYSMEM (640K) there is a 384K hole for I/O.  From the kernel,
-// IOPHYSMEM can be addressed at KERNBASE + IOPHYSMEM.  The hole ends
-// at physical address EXTPHYSMEM.
-#define IOPHYSMEM	0x0A0000
-#define EXTPHYSMEM	0x100000
 
 // Kernel stack.
 #define KSTACKTOP	KERNBASE

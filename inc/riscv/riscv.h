@@ -16,6 +16,10 @@ read_fp(void)
 		__asm__ __volatile__("wfi" ::: "memory"); \
 	} while (0)
 
-
+static inline int
+cpunum(void)
+{
+  return 0;
+}
 
 #endif /* !_INC_RISCV_H */

@@ -154,7 +154,7 @@ all:
 
 ifeq ($(ARCH), riscv)
 # current version of gcc doesn't support gstabs maybe dwarf
-KERN_CFLAGS := $(CFLAGS) -DJOS_KERNEL -g
+KERN_CFLAGS := $(CFLAGS) -DJOS_KERNEL -gdwarf
 else
 KERN_CFLAGS := $(CFLAGS) -DJOS_KERNEL -gstabs
 USER_CFLAGS := $(CFLAGS) -DJOS_USER -gstabs

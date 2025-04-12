@@ -28,6 +28,8 @@
 #define SBI_EXT_BASE_GET_MARCHID		0x5
 #define SBI_EXT_BASE_GET_MIMPID			0x6
 #define SBI_EXT_BASE_GET_MSG			0x7
+#define SBI_EXT_BASE_GET_MEMSTART		0x8
+#define SBI_EXT_BASE_GET_MEMSIZE		0x9
 
 /* SBI function IDs for TIME extension*/
 #define SBI_EXT_TIME_SET_TIMER			0x0
@@ -98,4 +100,10 @@ struct sbiret sbi_ecall(int ext, int fid, unsigned long arg0,
 
 void sbi_console_putchar(int ch);
 int sbi_console_getchar(void);
+
+long sbi_firmware_getstart(void);
+long sbi_firmware_getend(void);
+
+long sbi_mem_getstart(void);
+long sbi_mem_getsize(void);
 #endif

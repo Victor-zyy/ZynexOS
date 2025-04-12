@@ -6,6 +6,8 @@
 #include <riscv/console.h>
 #include <riscv/monitor.h>
 #include <riscv/string.h>
+#include <riscv/riscv.h>
+#include <riscv/sbi.h>
 
 #define BANNER						     \
      "   ______                            _____  _____  \n" \
@@ -32,10 +34,61 @@ riscv_init(void)
 	// Can't call cprintf until after we do this!
 	cons_init();
 
-	cprintf("6828 decimal is %o octal!\n", 6828);
 	cprintf("Hello, ZynexOS!\n");
 	cprintf(BANNER);
+
+	// memory management
+	// mem_init();
+	cprintf("mem_start  :   0x%08lx\n", sbi_mem_getstart());
+	cprintf("mem_size   :   0x%08lx\n", sbi_mem_getsize());
+	cprintf("firm_start :   0x%08lx\n", sbi_firmware_getstart());
+	cprintf("firm_end   :   0x%08lx\n", sbi_firmware_getend());
 	while(1)
 	  monitor(NULL);
 }
 
+
+
+/*
+ * Variable panicstr contains argument to first call to panic; used as flag
+ * to indicate that the kernel has already called panic.
+ */
+const char *panicstr;
+
+/*
+ * Panic is called on unresolvable fatal errors.
+ * It prints "panic: mesg", and then enters the kernel monitor.
+ */
+void
+_panic(const char *file, int line, const char *fmt,...)
+{
+	va_list ap;
+
+	if (panicstr)
+		goto dead;
+	panicstr = fmt;
+
+	va_start(ap, fmt);
+	cprintf("kernel panic on CPU %d at %s:%d: ", cpunum(), file, line);
+	vcprintf(fmt, ap);
+	cprintf("\n");
+	va_end(ap);
+
+dead:
+	/* break into the kernel monitor */
+	while (1)
+		monitor(NULL);
+}
+
+/* like panic, but don't */
+void
+_warn(const char *file, int line, const char *fmt,...)
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+	cprintf("kernel warning at %s:%d: ", file, line);
+	vcprintf(fmt, ap);
+	cprintf("\n");
+	va_end(ap);
+}
