@@ -8,6 +8,7 @@
 #include <riscv/string.h>
 #include <riscv/riscv.h>
 #include <riscv/sbi.h>
+#include <riscv/pmap.h>
 
 #define BANNER						     \
      "   ______                            _____  _____  \n" \
@@ -38,7 +39,7 @@ riscv_init(void)
 	cprintf(BANNER);
 
 	// memory management
-	// mem_init();
+	mem_init();
 	cprintf("mem_start  :   0x%08lx\n", sbi_mem_getstart());
 	cprintf("mem_size   :   0x%08lx\n", sbi_mem_getsize());
 	cprintf("firm_start :   0x%08lx\n", sbi_firmware_getstart());

@@ -85,6 +85,8 @@
 // All physical memory mapped at this address
 #define	KERNBASE	0xFFFFFFFF00000000
 
+#define PHYMEMOFF        0x80000000
+#define EXTPHYSMEM       (0x80200000 - PHYMEMOFF)
 // Kernel stack.
 #define KSTACKTOP	KERNBASE
 #define KSTKSIZE	(8*PGSIZE)   		// size of a kernel stack

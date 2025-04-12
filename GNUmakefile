@@ -184,7 +184,7 @@ CPUS ?= 1
 
 ifeq ($(ARCH), riscv)
 
-QEMUOPTS = -M virt -m 1G -serial mon:stdio
+QEMUOPTS = -M virt -m 256M -serial mon:stdio
 QEMUOPTS += $(shell if $(QEMU) -nographic -help | grep -q '^-D '; then echo '-D qemu.log'; fi)
 QEMUOPTS += -smp $(CPUS)
 QEMUOPTS += -bios $(TOP)/opensbi/fw_jump.bin

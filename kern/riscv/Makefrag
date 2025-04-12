@@ -20,6 +20,7 @@ KERN_SRCFILES :=	kern/riscv/entry.S \
 			kern/riscv/monitor.c \
 			kern/riscv/printf.c \
 			kern/riscv/sbi.c \
+			kern/riscv/pmap.c \
 			lib/riscv/printfmt.c \
 			lib/riscv/readline.c \
 			lib/riscv/string.c
