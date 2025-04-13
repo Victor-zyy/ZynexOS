@@ -213,19 +213,18 @@ mem_init(void)
 	// If the machine reboots at this point, you've probably set up your
 	// kern_pgdir wrong.
 	load_satp(PADDR(kern_pgdir));
-	#if 0
 	check_page_free_list(0);
 
 	// entry.S set the really important flags in cr0 (including enabling
 	// paging).  Here we configure the rest of the flags that we care about.
+	#if 0
 	cr0 = rcr0();
 	cr0 |= CR0_PE|CR0_PG|CR0_AM|CR0_WP|CR0_NE|CR0_MP;
 	cr0 &= ~(CR0_TS|CR0_EM);
 	lcr0(cr0);
-
+	#endif 
 	// Some more checks, only possible after kern_pgdir is installed.
 	check_page_installed_pgdir();
-#endif
 }
 // --------------------------------------------------------------
 // Tracking of physical pages.
@@ -992,7 +991,6 @@ check_page(void)
 	page_free(pp4);
 	cprintf("check_page() succeeded!\n");
 }
-#if 0
 // check page_insert, page_remove, &c, with an installed kern_pgdir
 static void
 check_page_installed_pgdir(void)
@@ -1011,10 +1009,12 @@ check_page_installed_pgdir(void)
 	page_free(pp0);
 	memset(page2kva(pp1), 1, PGSIZE);
 	memset(page2kva(pp2), 2, PGSIZE);
-	page_insert(kern_pgdir, pp1, (void*) PGSIZE, PTE_W);
+
+	page_insert(kern_pgdir, pp1, (void*) PGSIZE, PTE_W | PTE_R);
 	assert(pp1->pp_ref == 1);
 	assert(*(uint32_t *)PGSIZE == 0x01010101U);
-	page_insert(kern_pgdir, pp2, (void*) PGSIZE, PTE_W);
+
+	page_insert(kern_pgdir, pp2, (void*) PGSIZE, PTE_W | PTE_R);
 	assert(*(uint32_t *)PGSIZE == 0x02020202U);
 	assert(pp2->pp_ref == 1);
 	assert(pp1->pp_ref == 0);
@@ -1028,10 +1028,8 @@ check_page_installed_pgdir(void)
 	kern_pgdir[0] = 0;
 	assert(pp0->pp_ref == 1);
 	pp0->pp_ref = 0;
-
 	// free the pages we took
 	page_free(pp0);
 
 	cprintf("check_page_installed_pgdir() succeeded!\n");
 }
-#endif
