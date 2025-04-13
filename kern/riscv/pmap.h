@@ -42,7 +42,7 @@ _kaddr(const char *file, int line, physaddr_t pa)
 {
 	if (PGNUM(pa) >= npages)
 		_panic(file, line, "KADDR called with invalid pa %08lx", pa);
-	return (void *)(pa + KERNBASE + PHYMEMOFF);
+	return (void *)(pa + KERNBASE);
 }
 
 
@@ -66,7 +66,7 @@ void	tlb_invalidate(pde_t *pgdir, void *va);
 static inline physaddr_t
 page2pa(struct PageInfo *pp)
 {
-	return (pp - pages) << PGSHIFT;
+  return (((pp - pages) << PGSHIFT) + PHYMEMOFF);
 }
 
 static inline struct PageInfo*

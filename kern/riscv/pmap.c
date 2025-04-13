@@ -30,7 +30,7 @@ riscv_detect_memory(void)
 
 	// Use sbi calls to measure available base & extended memory.
 	// (CMOS calls return results in bytes.)
-	firmmem  = sbi_firmware_getend() - sbi_firmware_getstart();
+	firmmem  = ROUNDUP(sbi_firmware_getend() - sbi_firmware_getstart(), PGSIZE);
 	totalmem = sbi_mem_getsize();
 
 	// Calculate the number of physical pages available in both base
@@ -157,11 +157,11 @@ mem_init(void)
 	// or page_insert
 	page_init();
 
-	#if 0
 	check_page_free_list(1);
 	check_page_alloc();
-	check_page();
 
+	#if 0
+	check_page();
 	//////////////////////////////////////////////////////////////////////
 	// Now we set up virtual memory
 
@@ -581,7 +581,6 @@ tlb_invalidate(pde_t *pgdir, void *va)
 // Checking functions.
 // --------------------------------------------------------------
 
-#if 0
 //
 // Check that the pages on the page_free_list are reasonable.
 //
@@ -589,7 +588,7 @@ static void
 check_page_free_list(bool only_low_memory)
 {
 	struct PageInfo *pp;
-	unsigned pdx_limit = only_low_memory ? 1 : NPDENTRIES;
+	unsigned pdx_limit = only_low_memory ? 1 : NPDENTRIES; /* FIXME: 1 */
 	int nfree_basemem = 0, nfree_extmem = 0;
 	char *first_free_page;
 
@@ -602,7 +601,8 @@ check_page_free_list(bool only_low_memory)
 		struct PageInfo *pp1, *pp2;
 		struct PageInfo **tp[2] = { &pp1, &pp2 };
 		for (pp = page_free_list; pp; pp = pp->pp_link) {
-			int pagetype = PDX(page2pa(pp)) >= pdx_limit;
+		  // 0x80000000-0x80400000
+			int pagetype = PD2X(page2pa(pp)) >= pdx_limit;
 			*tp[pagetype] = pp;
 			tp[pagetype] = &pp->pp_link;
 		}
@@ -614,8 +614,9 @@ check_page_free_list(bool only_low_memory)
 	// if there's a page that shouldn't be on the free list,
 	// try to make sure it eventually causes trouble.
 	for (pp = page_free_list; pp; pp = pp->pp_link)
-		if (PDX(page2pa(pp)) < pdx_limit)
-			memset(page2kva(pp), 0x97, 128);
+	  if (PD2X(page2pa(pp)) < pdx_limit){
+	    memset(page2kva(pp), 0x97, 128);
+	  }
 
 	first_free_page = (char *) boot_alloc(0);
 	for (pp = page_free_list; pp; pp = pp->pp_link) {
@@ -625,13 +626,12 @@ check_page_free_list(bool only_low_memory)
 		assert(((char *) pp - (char *) pages) % sizeof(*pp) == 0);
 
 		// check a few pages that shouldn't be on the free list
-		assert(page2pa(pp) != 0);
-		assert(page2pa(pp) != IOPHYSMEM);
-		assert(page2pa(pp) != EXTPHYSMEM - PGSIZE);
-		assert(page2pa(pp) != EXTPHYSMEM);
-		assert(page2pa(pp) < EXTPHYSMEM || (char *) page2kva(pp) >= first_free_page);
+		assert(page2pa(pp) != PHYMEMOFF);
+		assert(page2pa(pp) != (firmmem + PHYMEMOFF) - PGSIZE);
+		assert(page2pa(pp) != (EXTPHYSMEM + PHYMEMOFF));
+		assert(page2pa(pp) < (EXTPHYSMEM + PHYMEMOFF) || (char *) page2kva(pp) >= first_free_page);
 
-		if (page2pa(pp) < EXTPHYSMEM)
+		if (page2pa(pp) < (EXTPHYSMEM + PHYMEMOFF))
 			++nfree_basemem;
 		else
 			++nfree_extmem;
@@ -672,9 +672,9 @@ check_page_alloc(void)
 	assert(pp0);
 	assert(pp1 && pp1 != pp0);
 	assert(pp2 && pp2 != pp1 && pp2 != pp0);
-	assert(page2pa(pp0) < npages*PGSIZE);
-	assert(page2pa(pp1) < npages*PGSIZE);
-	assert(page2pa(pp2) < npages*PGSIZE);
+	assert(page2pa(pp0) < npages*PGSIZE + PHYMEMOFF);
+	assert(page2pa(pp1) < npages*PGSIZE + PHYMEMOFF);
+	assert(page2pa(pp2) < npages*PGSIZE + PHYMEMOFF);
 
 	// temporarily steal the rest of the free pages
 	fl = page_free_list;
@@ -721,6 +721,7 @@ check_page_alloc(void)
 	cprintf("check_page_alloc() succeeded!\n");
 }
 
+#if 0
 //
 // Checks that the kernel part of virtual address space
 // has been setup roughly correctly (by mem_init()).
@@ -790,8 +791,6 @@ check_va2pa(pde_t *pgdir, uintptr_t va)
 		return ~0;
 	return PTE_ADDR(p[PTX(va)]);
 }
-
-
 // check page_insert, page_remove, &c
 static void
 check_page(void)
@@ -944,7 +943,6 @@ check_page(void)
 
 	cprintf("check_page() succeeded!\n");
 }
-
 // check page_insert, page_remove, &c, with an installed kern_pgdir
 static void
 check_page_installed_pgdir(void)
