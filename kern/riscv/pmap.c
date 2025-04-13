@@ -137,7 +137,7 @@ mem_init(void)
 	// following line.)
 
 	// Permissions: kernel R, user R
-	kern_pgdir[PD0X(UVPT)] = PDE_ENTRY(PADDR(kern_pgdir)) | PTE_U | PTE_V; /* FIXME: PTE_U is unsure */
+	// kern_pgdir[PD0X(UVPT)] = PDE_ENTRY(PADDR(kern_pgdir)) | PTE_U | PTE_V; /* FIXME: PTE_U is unsure */
 
 	//////////////////////////////////////////////////////////////////////
 	// Allocate an array of npages 'struct PageInfo's and store it in 'pages'.
@@ -212,8 +212,8 @@ mem_init(void)
 	//
 	// If the machine reboots at this point, you've probably set up your
 	// kern_pgdir wrong.
-	#if 0
 	load_satp(PADDR(kern_pgdir));
+	#if 0
 	check_page_free_list(0);
 
 	// entry.S set the really important flags in cr0 (including enabling
@@ -485,7 +485,7 @@ boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm
 	for(i = 0; i < n_pages; i++){
 	    pte_t *p_pte = pgdir_walk(pgdir, (void *)va, true);
 	    assert(p_pte != NULL);
-	    *p_pte =PTE_ENTRY( pa ) | perm | PTE_V;
+	    *p_pte = PTE_ENTRY( pa ) | perm | PTE_V;
 	    va += PGSIZE;
 	    pa += PGSIZE;
 	}
