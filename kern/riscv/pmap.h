@@ -17,6 +17,10 @@ extern size_t npages;
 extern pde_t *kern_pgdir;
 
 #define PDE_ENTRY(pa) ((pa >> 12) << 10)
+#define PTE_ENTRY(pa) ((pa >> 12) << 10)
+
+#define PDE_PHY(va) ((va >> 10) << 12)
+#define PTE_PHY(va) ((va >> 10) << 12)
 #define SIZE_2M  (0x200000)
 /* This macro takes a kernel virtual address -- an address that points above
  * KERNBASE, where the machine's maximum 256MB of physical memory is mapped --

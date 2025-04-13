@@ -103,3 +103,70 @@ long sbi_mem_getsize(void)
 
 	return ret.value;
 }
+
+
+static int __sbi_rfence_v01(int fid, const unsigned long *hart_mask,
+                            unsigned long start, unsigned long size,
+                            unsigned long arg4, unsigned long arg5)
+{
+        int result = 0;
+
+        /* v0.2 function IDs are equivalent to v0.1 extension IDs */
+        switch (fid) {
+        case SBI_EXT_RFENCE_REMOTE_FENCE_I:
+	    sbi_ecall(SBI_EXT_0_1_REMOTE_FENCE_I, 0,
+			(unsigned long)hart_mask, 0, 0, 0, 0, 0);
+	    break;
+        case SBI_EXT_RFENCE_REMOTE_SFENCE_VMA:
+	    sbi_ecall(SBI_EXT_0_1_REMOTE_SFENCE_VMA, 0,
+			(unsigned long)hart_mask, start, size,
+			0, 0, 0);
+	    break;
+        case SBI_EXT_RFENCE_REMOTE_SFENCE_VMA_ASID:
+	    sbi_ecall(SBI_EXT_0_1_REMOTE_SFENCE_VMA_ASID, 0,
+			(unsigned long)hart_mask, start, size,
+			arg4, 0, 0);
+	    break;
+        default:
+	  result = SBI_ERR_FAILURE;
+        }
+
+        return result;
+}
+/**
+ * sbi_remote_sfence_vma() - Execute SFENCE.VMA instructions on given remote
+ *                           harts for the specified virtual address range.
+ * @hart_mask: A cpu mask containing all the target harts.
+ * @start: Start of the virtual address
+ * @size: Total size of the virtual address range.
+ *
+ * Return: 0 on success, appropriate linux error code otherwise.
+ */
+int sbi_remote_sfence_vma(const unsigned long *hart_mask,
+                           unsigned long start,
+                           unsigned long size)
+{
+        return __sbi_rfence_v01(SBI_EXT_RFENCE_REMOTE_SFENCE_VMA,
+                            hart_mask, start, size, 0, 0);
+}
+
+/**
+ * sbi_remote_sfence_vma_asid() - Execute SFENCE.VMA instructions on given
+ * remote harts for a virtual address range belonging to a specific ASID.
+ *
+ * @hart_mask: A cpu mask containing all the target harts.
+ * @start: Start of the virtual address
+ * @size: Total size of the virtual address range.
+ * @asid: The value of address space identifier (ASID).
+ *
+ * Return: 0 on success, appropriate linux error code otherwise.
+ */
+int sbi_remote_sfence_vma_asid(const unsigned long *hart_mask,
+                                unsigned long start,
+                                unsigned long size,
+                                unsigned long asid)
+{
+        return __sbi_rfence_v01(SBI_EXT_RFENCE_REMOTE_SFENCE_VMA_ASID,
+				hart_mask, start, size, asid, 0);
+}
+

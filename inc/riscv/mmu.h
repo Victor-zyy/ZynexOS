@@ -32,12 +32,12 @@
 #define PGNUM(la)	(((uintptr_t) (la & PHYMASK)) >> PTXSHIFT)
 
 // page directory index
-#define PD0X(la)		((((uintptr_t) (la)) >> PDX0SHIFT) & 0x3FF)
-#define PD1X(la)		((((uintptr_t) (la)) >> PDX1SHIFT) & 0x3FF)
-#define PD2X(la)		((((uintptr_t) (la)) >> PDX2SHIFT) & 0x3FF)
+#define PD0X(la)		((((uintptr_t) (la)) >> PDX0SHIFT) & 0x1FF)
+#define PD1X(la)		((((uintptr_t) (la)) >> PDX1SHIFT) & 0x1FF)
+#define PD2X(la)		((((uintptr_t) (la)) >> PDX2SHIFT) & 0x1FF)
 
 // page table index
-#define PTX(la)		        ((((uintptr_t) (la)) >> PTXSHIFT) & 0x3FF)
+#define PTX(la)		        ((((uintptr_t) (la)) >> PTXSHIFT) & 0x1FF)
 
 // offset in page
 #define PGOFF(la)	(((uintptr_t) (la)) & 0xFFF)
@@ -52,6 +52,7 @@
 #define PGSIZE		4096		// bytes mapped by a page
 #define PGSHIFT		12		// log2(PGSIZE)
 
+// PTSIZE 2M
 #define PTSIZE		(PGSIZE*NPTENTRIES) // bytes mapped by a page directory entry
 #define PTSHIFT		22		// log2(PTSIZE)
 
@@ -81,7 +82,8 @@
 // #define PTE_SYSCALL	(PTE_AVAIL | PTE_P | PTE_W | PTE_U)
 
 // Address in page table or page directory entry
-#define PTE_ADDR(pte)	((physaddr_t) (pte) & ~0xff80000000000FFF)
+#define PTE_ADDR(pte)	PTE_PHY(((physaddr_t) (pte) & ~0xff800000000003FF))
+#define PDE_ADDR(pte)	PTE_PHY(((physaddr_t) (pte) & ~0xff800000000003FF))
 
 // SATP register
 #define SATP_SV48  0x9000000000000000
