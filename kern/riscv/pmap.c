@@ -149,7 +149,6 @@ mem_init(void)
 
 	pages = (struct PageInfo *)boot_alloc(sizeof(struct PageInfo) * npages);
 	memset(pages, 0 , sizeof(struct PageInfo) * npages);	
-	cprintf("npages : %d \n", npages); // 65536
 	//////////////////////////////////////////////////////////////////////
 	// Now that we've allocated the initial kernel data structures, we set
 	// up the list of free physical pages. Once we've done so, all further

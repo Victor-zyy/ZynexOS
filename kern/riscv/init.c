@@ -34,16 +34,14 @@ riscv_init(void)
 	// Initialize the console.
 	// Can't call cprintf until after we do this!
 	cons_init();
+	//cprintf("6828 decimal is %o octal!\n", 6828);
+
 
 	cprintf("Hello, ZynexOS!\n");
 	cprintf(BANNER);
 
 	// memory management
 	mem_init();
-	cprintf("mem_start  :   0x%08lx\n", sbi_mem_getstart());
-	cprintf("mem_size   :   0x%08lx\n", sbi_mem_getsize());
-	cprintf("firm_start :   0x%08lx\n", sbi_firmware_getstart());
-	cprintf("firm_end   :   0x%08lx\n", sbi_firmware_getend());
 	while(1)
 	  monitor(NULL);
 }

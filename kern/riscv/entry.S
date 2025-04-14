@@ -68,6 +68,9 @@ entry:
 	sfence.vma
 	csrw    CSR_SATP, t0
 
+	// reset the satp vector
+	la	a2, _park_infinite
+	csrw	CSR_STVEC, a2
 	la  	a2, jump_relocated
 	jr 	a2
 jump_relocated:	
