@@ -13,8 +13,8 @@ load_satp(uint64_t physical)
   asm volatile("csrr %0,satp\n" \
 	       "srli %1, %1, 12 \n" \
 	       "or %0, %0, %1\n" \
-	       "csrw satp, %0\n" \
 	       "sfence.vma\n" \
+	       "csrw satp, %0\n" \
 	       :
 	       : "r"(satp_) , "r"(physical)
 	       );
