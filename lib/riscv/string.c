@@ -1,6 +1,6 @@
 // Basic string routines.  Not hardware optimized, but not shabby.
 
-#include <riscv/string.h>
+#include <inc/riscv/string.h>
 
 // Using assembly for memset/memmove
 // makes some difference on real hardware,

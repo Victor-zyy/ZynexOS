@@ -1,14 +1,14 @@
 /* See COPYRIGHT for copyright information. */
 
-#include <riscv/stdio.h>
-#include <riscv/string.h>
-#include <riscv/assert.h>
-#include <riscv/console.h>
-#include <riscv/monitor.h>
-#include <riscv/string.h>
-#include <riscv/riscv.h>
-#include <riscv/sbi.h>
-#include <riscv/pmap.h>
+#include <inc/riscv/stdio.h>
+#include <inc/riscv/string.h>
+#include <inc/riscv/assert.h>
+#include <kern/riscv/console.h>
+#include <kern/riscv/monitor.h>
+#include <inc/riscv/string.h>
+#include <inc/riscv/riscv.h>
+#include <inc/riscv/sbi.h>
+#include <kern/riscv/pmap.h>
 
 #define BANNER						     \
      "   ______                            _____  _____  \n" \

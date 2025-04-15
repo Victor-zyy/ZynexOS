@@ -1,6 +1,6 @@
-#include <riscv/riscv.h>
-#include <riscv/types.h>
-#include <riscv/elf.h>
+#include <inc/riscv/riscv.h>
+#include <inc/riscv/types.h>
+#include <inc/riscv/elf.h>
 
 /**********************************************************************
  * This a dirt simple boot loader, whose sole job is to boot

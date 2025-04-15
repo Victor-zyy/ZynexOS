@@ -1,16 +1,16 @@
 // Simple command-line kernel monitor useful for
 // controlling the kernel and exploring the system interactively.
 
-#include <riscv/stdio.h>
-#include <riscv/string.h>
-#include <riscv/memlayout.h>
-#include <riscv/assert.h>
-#include <riscv/riscv.h>
+#include <inc/riscv/stdio.h>
+#include <inc/riscv/string.h>
+#include <inc/riscv/memlayout.h>
+#include <inc/riscv/assert.h>
+#include <inc/riscv/riscv.h>
 
-#include <riscv/console.h>
-#include <riscv/monitor.h>
+#include <kern/riscv/console.h>
+#include <kern/riscv/monitor.h>
 //#include <riscv/kdebug.h>
-#include <riscv/trap.h>
+#include <inc/riscv/trap.h>
 //#include <riscv/pmap.h>
 //#include <riscv/env.h>
 

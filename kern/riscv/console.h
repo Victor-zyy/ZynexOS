@@ -6,7 +6,7 @@
 # error "This is a JOS kernel header; user programs should not #include it"
 #endif
 
-#include <riscv/types.h>
+#include <inc/riscv/types.h>
 
 
 void cons_init(void);

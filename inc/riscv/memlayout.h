@@ -2,8 +2,8 @@
 #define JOS_INC_MEMLAYOUT_H
 
 #ifndef __ASSEMBLER__
-#include <riscv/types.h>
-#include <riscv/mmu.h>
+#include <inc/riscv/types.h>
+#include <inc/riscv/mmu.h>
 #endif /* not __ASSEMBLER__ */
 
 /*

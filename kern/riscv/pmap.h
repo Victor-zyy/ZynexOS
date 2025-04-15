@@ -6,8 +6,8 @@
 # error "This is a JOS kernel header; user programs should not #include it"
 #endif
 
-#include <riscv/memlayout.h>
-#include <riscv/assert.h>
+#include <inc/riscv/memlayout.h>
+#include <inc/riscv/assert.h>
 
 extern char bootstacktop[], bootstack[];
 

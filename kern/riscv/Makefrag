@@ -23,7 +23,24 @@ KERN_SRCFILES :=	kern/riscv/entry.S \
 			kern/riscv/pmap.c \
 			lib/riscv/printfmt.c \
 			lib/riscv/readline.c \
-			lib/riscv/string.c
+			lib/riscv/string.c \
+			kern/riscv/env.c 
+
+# Binary program images to embed within the kernel.
+# Binary files for LAB3
+KERN_BINFILES :=	user/riscv/hello 
+#			user/riscv/buggyhello \
+			user/riscv/buggyhello2 \
+			user/riscv/evilhello \
+			user/riscv/testbss \
+			user/riscv/divzero \
+			user/riscv/breakpoint \
+			user/riscv/softint \
+			user/riscv/badsegment \
+			user/riscv/faultread \
+			user/riscv/faultreadkernel \
+			user/riscv/faultwrite \
+			user/riscv/faultwritekernel
 
 # Only build files if they exist.
 KERN_SRCFILES := $(wildcard $(KERN_SRCFILES))
@@ -33,6 +50,8 @@ KERN_OBJFILES := $(patsubst %.c, $(OBJDIR)/kern/%.o, $(notdir $(KERN_SRCFILES)))
 KERN_OBJFILES := $(patsubst %.S, $(OBJDIR)/kern/%.o, $(KERN_OBJFILES))
 
 KERN_OBJFILES := $(patsubst $(OBJDIR)/lib/%, $(OBJDIR)/kern/%, $(KERN_OBJFILES))
+
+KERN_BINFILES := $(patsubst %, $(OBJDIR)/user/%, $(notdir $(KERN_BINFILES)))
 
 # How to build kernel object files
 $(OBJDIR)/kern/%.o: kern/riscv/%.c $(OBJDIR)/.vars.KERN_CFLAGS
@@ -59,7 +78,7 @@ $(OBJDIR)/kern/init.o: $(OBJDIR)/.vars.INIT_CFLAGS
 $(OBJDIR)/kern/kernel: $(KERN_OBJFILES) $(KERN_BINFILES) kern/riscv/kernel.ld \
 	  $(OBJDIR)/.vars.KERN_LDFLAGS
 	@echo + ld $@
-	$(V)$(LD) -o $@ $(KERN_LDFLAGS) $(KERN_OBJFILES) $(GCC_LIB)
+	$(V)$(LD) -o $@ $(KERN_LDFLAGS) $(KERN_OBJFILES) $(GCC_LIB) -b elf64-littleriscv $(KERN_BINFILES)
 	$(V)$(OBJDUMP) -S $@ > $@.asm
 	$(V)$(NM) -n $@ > $@.sym
 

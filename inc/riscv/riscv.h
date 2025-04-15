@@ -1,16 +1,18 @@
 #ifndef _INC_RISCV_H
 #define _INC_RISCV_H
 
-#include <riscv/types.h>
+#include <inc/riscv/types.h>
 
 #define ASID_MASK(satp) ((satp >> 44) & 0x0ffff)
 #define ASID_PPN(satp) ((satp & 0x00000fffffffffff)
-
+#define ASID_PPN_MASK 0xfffff00000000000
 static inline void
 load_satp(uint64_t physical)
 {
   uint64_t satp_ = 0;
   asm volatile("csrr %0,satp\n" \
+	       "srli %0, %0, 44\n"\
+	       "slli %0, %0, 44\n"\
 	       "srli %1, %1, 12 \n" \
 	       "or %0, %0, %1\n" \
 	       "sfence.vma\n" \

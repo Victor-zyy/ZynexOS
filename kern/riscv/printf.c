@@ -1,9 +1,9 @@
 // Simple implementation of cprintf console output for the kernel,
 // based on printfmt() and the kernel console's cputchar().
 
-#include <riscv/types.h>
-#include <riscv/stdio.h>
-#include <riscv/stdarg.h>
+#include <inc/riscv/types.h>
+#include <inc/riscv/stdio.h>
+#include <inc/riscv/stdarg.h>
 
 
 static void

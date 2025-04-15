@@ -2,11 +2,11 @@
 // used in common by printf, sprintf, fprintf, etc.
 // This code is also used by both the kernel and user programs.
 
-#include <riscv/types.h>
-#include <riscv/stdio.h>
-#include <riscv/string.h>
-#include <riscv/stdarg.h>
-#include <riscv/error.h>
+#include <inc/riscv/types.h>
+#include <inc/riscv/stdio.h>
+#include <inc/riscv/string.h>
+#include <inc/riscv/stdarg.h>
+#include <inc/riscv/error.h>
 
 /*
  * Space or zero padding and a field width are supported for the numeric

@@ -1,5 +1,5 @@
-#include <riscv/stdio.h>
-#include <riscv/error.h>
+#include <inc/riscv/stdio.h>
+#include <inc/riscv/error.h>
 
 #define BUFLEN 1024
 static char buf[BUFLEN];

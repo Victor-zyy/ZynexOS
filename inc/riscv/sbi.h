@@ -1,6 +1,6 @@
 #ifndef SBI_H
 #define SBI_H
-#include <riscv/types.h>
+#include <inc/riscv/types.h>
 
 /* SBI Extension IDs */
 #define SBI_EXT_0_1_SET_TIMER			0x0

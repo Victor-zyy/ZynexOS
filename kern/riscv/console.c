@@ -1,10 +1,10 @@
 /* See COPYRIGHT for copyright information. */
 
 
-#include <riscv/riscv.h>
-#include <riscv/sbi.h>
-#include <riscv/console.h>
-#include <riscv/stdio.h>
+#include <inc/riscv/riscv.h>
+#include <inc/riscv/sbi.h>
+#include <kern/riscv/console.h>
+#include <inc/riscv/stdio.h>
 
 static void cons_intr(int (*proc)(void));
 static void cons_putc(int c);

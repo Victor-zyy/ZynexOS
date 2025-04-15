@@ -93,7 +93,7 @@
 
 #ifdef __ASSEMBLER__
 #else
-#include <riscv/types.h>
+#include <inc/riscv/types.h>
 #endif
 // Page fault error codes
 

@@ -34,7 +34,7 @@ SECTIONS
  
 	/* The data segment */
 	.data : {
-		*(.data) *(.data.rel.ro*)
+		*(.data) *(.data.rel.ro*) *(.data*)
 	}
  
 	PROVIDE(edata = .);

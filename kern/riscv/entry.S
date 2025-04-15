@@ -1,9 +1,9 @@
 /* See COPYRIGHT for copyright information. */
 
-#include <riscv/mmu.h>
-#include <riscv/csr.h>
-#include <riscv/memlayout.h>
-#include <riscv/trap.h>
+#include <inc/riscv/mmu.h>
+#include <inc/riscv/csr.h>
+#include <inc/riscv/memlayout.h>
+#include <inc/riscv/trap.h>
 
 # Shift Right Logical 
 #define SRL(val, shamt)		(((val) >> (shamt)) & ~(-1 << (32 - (shamt))))

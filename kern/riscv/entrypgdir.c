@@ -1,5 +1,5 @@
-#include <riscv/mmu.h>
-#include <riscv/memlayout.h>
+#include <inc/riscv/mmu.h>
+#include <inc/riscv/memlayout.h>
 
 pte_t entry_pgtable[NPTENTRIES];
 pte_t entry_pgtable1[NPTENTRIES];

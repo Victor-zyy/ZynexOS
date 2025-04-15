@@ -1,4 +1,4 @@
-#include <riscv/csr.h>
+#include <inc/riscv/csr.h>
 
 	# riscv64 without no opensbi firmware
 	# start from 0x1000 MROM Space
