@@ -119,8 +119,7 @@ CFLAGS += -fno-tree-ch
 #CFLAGS += -I$(TOP)/net/lwip/include \
 	  -I$(TOP)/net/lwip/include/ipv4 \
 	  -I$(TOP)/net/lwip/jos
-CFLAGS += -I$(TOP)/inc/
-CFLAGS += -I$(TOP)/kern/
+CFLAGS += -I$(TOP)/
 
 # Add -fno-stack-protector if the option exists.
 CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
@@ -133,7 +132,7 @@ LDFLAGS := -m elf_i386
 endif
 
 # Linker flags for JOS user programs
-ULDFLAGS := -T user/user.ld
+ULDFLAGS := -T user/$(ARCH)/user.ld
 
 GCC_LIB := $(shell $(CC) $(CFLAGS) -print-libgcc-file-name)
 
@@ -155,6 +154,7 @@ all:
 ifeq ($(ARCH), riscv)
 # current version of gcc doesn't support gstabs maybe dwarf
 KERN_CFLAGS := $(CFLAGS) -DJOS_KERNEL -gdwarf
+USER_CFLAGS := $(CFLAGS) -DJOS_USER -gdwarf
 else
 KERN_CFLAGS := $(CFLAGS) -DJOS_KERNEL -gstabs
 USER_CFLAGS := $(CFLAGS) -DJOS_USER -gstabs
@@ -175,7 +175,7 @@ $(OBJDIR)/.vars.%: FORCE
 include boot/arch/$(ARCH)/Makefrag
 include kern/$(ARCH)/Makefrag
 include lib/$(ARCH)/Makefrag
-#include user/Makefrag
+include user/$(ARCH)/Makefrag
 #include fs/Makefrag
 #include net/Makefrag
 

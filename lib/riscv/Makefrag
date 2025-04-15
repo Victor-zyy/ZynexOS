@@ -6,11 +6,13 @@ LIB_SRCFILES :=		lib/riscv/console.c \
 			lib/riscv/printf.c \
 			lib/riscv/printfmt.c \
 			lib/riscv/readline.c \
+			lib/riscv/syscall.c \
+			lib/riscv/exit.c \
 			lib/riscv/string.c 
 
 
-LIB_OBJFILES := $(patsubst lib/%.c, $(OBJDIR)/lib/%.o, $(notdir $(LIB_SRCFILES)))
-LIB_OBJFILES := $(patsubst lib/%.S, $(OBJDIR)/lib/%.o, $(LIB_OBJFILES))
+LIB_OBJFILES := $(patsubst %.c, $(OBJDIR)/lib/%.o, $(notdir $(LIB_SRCFILES)))
+LIB_OBJFILES := $(patsubst %.S, $(OBJDIR)/lib/%.o, $(LIB_OBJFILES))
 
 $(OBJDIR)/lib/%.o: lib/riscv/%.c $(OBJDIR)/.vars.USER_CFLAGS
 	@echo + cc[USER] $<
