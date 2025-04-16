@@ -20,6 +20,8 @@ start:
 	lla	s4, _start_hang
 	csrw	CSR_MTVEC, s4
 
+	mv	tp, zero
+
 	#setup stack for 4096bytes
 	/* Setup stack */
 	la	a3, 0x8000
