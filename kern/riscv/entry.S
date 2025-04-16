@@ -69,8 +69,9 @@ entry:
 	csrw    CSR_SATP, t0
 
 	// reset the satp vector
-	la	a2, _park_infinite
+	la	a2, _alltraps
 	csrw	CSR_STVEC, a2
+
 	la  	a2, jump_relocated
 	jr 	a2
 jump_relocated:	
