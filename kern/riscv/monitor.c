@@ -9,6 +9,7 @@
 
 #include <kern/riscv/console.h>
 #include <kern/riscv/monitor.h>
+#include <kern/riscv/trap.h>
 //#include <riscv/kdebug.h>
 #include <inc/riscv/trap.h>
 //#include <riscv/pmap.h>
@@ -258,10 +259,6 @@ runcmd(char *buf, struct Trapframe *tf)
 	return 0;
 }
 
-void
-print_trapframe(struct Trapframe *tf){
-  tf = tf;
-}
 
 void
 monitor(struct Trapframe *tf)
