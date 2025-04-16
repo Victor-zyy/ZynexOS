@@ -209,7 +209,7 @@ page_fault_handler(struct Trapframe *tf)
 	// Handle kernel-mode page faults.
 
 	// LAB 3: Your code here.
-	if (((tf->status & SSTATUS_SPP ) >> SPP_SHIFT) == 0) {
+	if (((tf->status & SSTATUS_SPP ) >> SPP_SHIFT) == 1) {
 		panic("page-fault form kernel mode!");
 	}
 

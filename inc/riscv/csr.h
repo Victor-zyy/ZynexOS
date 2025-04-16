@@ -25,7 +25,7 @@
 #define SSTATUS_SIE             (0x00000002)
 #define SSTATUS_SPIE            (0x00000020)
 #define SSTATUS_SPP             (0x00000100)
-#define SPP_SHIFT       (0x8)
+#define SPP_SHIFT               (0x8)
 
 #define SIE_SSIE                (0x00000002)
 #define SIE_STIE                (0x00000020)
