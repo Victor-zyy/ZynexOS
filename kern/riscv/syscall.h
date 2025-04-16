@@ -4,8 +4,8 @@
 # error "This is a JOS kernel header; user programs should not #include it"
 #endif
 
-#include <inc/syscall.h>
+#include <inc/riscv/syscall.h>
 
-int32_t syscall(uint32_t num, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, uint32_t a5);
+int32_t syscall(uint64_t syscallno, uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4, uint64_t a5);
 
 #endif /* !JOS_KERN_SYSCALL_H */

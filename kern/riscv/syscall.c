@@ -1,15 +1,15 @@
 /* See COPYRIGHT for copyright information. */
 
-#include <inc/x86.h>
-#include <inc/error.h>
-#include <inc/string.h>
-#include <inc/assert.h>
+#include <inc/riscv/riscv.h>
+#include <inc/riscv/error.h>
+#include <inc/riscv/string.h>
+#include <inc/riscv/assert.h>
 
-#include <kern/env.h>
-#include <kern/pmap.h>
-#include <kern/trap.h>
-#include <kern/syscall.h>
-#include <kern/console.h>
+#include <kern/riscv/env.h>
+#include <kern/riscv/pmap.h>
+#include <kern/riscv/trap.h>
+#include <kern/riscv/syscall.h>
+#include <kern/riscv/console.h>
 
 // Print a string to the system console.
 // The string is exactly 'len' characters long.
@@ -65,7 +65,7 @@ sys_env_destroy(envid_t envid)
 
 // Dispatches to the correct kernel function, passing the arguments.
 int32_t
-syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, uint32_t a5)
+syscall(uint64_t syscallno, uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4, uint64_t a5)
 {
 	// Call the function corresponding to the 'syscallno' parameter.
 	// Return any appropriate return value.
