@@ -9,6 +9,9 @@
 #include <inc/riscv/riscv.h>
 #include <inc/riscv/sbi.h>
 #include <kern/riscv/pmap.h>
+#include <kern/riscv/env.h>
+#include <kern/riscv/trap.h>
+#include <inc/riscv/env.h>
 
 #define BANNER						     \
      "   ______                            _____  _____  \n" \
@@ -42,6 +45,14 @@ riscv_init(void)
 
 	// memory management
 	mem_init();
+
+	// environment
+	env_init();
+	trap_init();
+
+	ENV_CREATE(user_hello, ENV_TYPE_USER);
+
+	env_run(&envs[0]);
 	while(1)
 	  monitor(NULL);
 }

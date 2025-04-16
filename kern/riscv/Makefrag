@@ -24,7 +24,10 @@ KERN_SRCFILES :=	kern/riscv/entry.S \
 			lib/riscv/printfmt.c \
 			lib/riscv/readline.c \
 			lib/riscv/string.c \
-			kern/riscv/env.c 
+			kern/riscv/env.c  \
+			kern/riscv/syscall.c  \
+			kern/riscv/trapentry.S  \
+			kern/riscv/trap.c 
 
 # Binary program images to embed within the kernel.
 # Binary files for LAB3
