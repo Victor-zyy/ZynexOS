@@ -40,9 +40,9 @@ KERN_BINFILES :=	user/riscv/hello \
 			user/riscv/faultwritekernel \
 			user/riscv/breakpoint \
 			user/riscv/testbss  \
-			user/riscv/buggyhello 
-#			user/riscv/buggyhello2 \
-			user/riscv/evilhello \
+			user/riscv/buggyhello \
+			user/riscv/buggyhello2  \
+			user/riscv/evilhello 
 
 # Only build files if they exist.
 KERN_SRCFILES := $(wildcard $(KERN_SRCFILES))
