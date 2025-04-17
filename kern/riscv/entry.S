@@ -72,6 +72,10 @@ entry:
 	la	a2, _alltraps
 	csrw	CSR_STVEC, a2
 
+	// reset the sscratch to zero means now we're in kernel / s-mode
+	li	a2, 0
+	csrw	sscratch, a2
+
 	la  	a2, jump_relocated
 	jr 	a2
 jump_relocated:	

@@ -27,7 +27,9 @@ _alltraps:
 	// but if we traped into kernel form kernel-mode then the sscratch is zero
 	// refered to PA4-NJU
 	csrrw	sp, CSR_SSCRATCH, sp
+	// sp != 0 means traped from user mode
 	bnez	sp, _save_context
+	// sp == 0 means trapped form S mode
 	csrr	sp, CSR_SSCRATCH
 
 _save_context:	
@@ -36,8 +38,7 @@ _save_context:
 	sd	t0, PT_T0(sp)
 
 	// save the stack
-	mv	t0, sp
-	addi	t0, t0, PT_SIZE
+	csrr 	t0, sscratch
 	sd	t0, PT_SP(sp)
 	
 	sd	ra, PT_RA(sp)
@@ -137,9 +138,12 @@ _alltraps_ret:
 
 	ld	t0, PT_SSTATUS(sp)
 	li	t1, 1
-	slli	t1, t1, 18
+	slli	t1, t1, 8
 	and	t0, t0, t1
-	beqz 	t0, scratch_save_
+	beqz 	t0, scratch_save_ // user mode
+
+	li	t0, 0
+	csrw	sscratch, t0
 
 	ld	t0, PT_SSTATUS(sp)
 	csrw	sstatus, t0

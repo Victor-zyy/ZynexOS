@@ -217,8 +217,8 @@ page_fault_handler(struct Trapframe *tf)
 	// the page fault happened in user mode.
 
 	// Destroy the environment that caused the fault.
-	cprintf("[%08x] user fault va %08x ip %08x\n",
-		curenv->env_id, fault_va, tf->sepc);
+	cprintf("[%08x] user fault va %08x sepc %08x scause %08x\n",
+		curenv->env_id, fault_va, tf->sepc, tf->scause);
 	print_trapframe(tf);
 	env_destroy(curenv);
 }
