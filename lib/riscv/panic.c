@@ -20,7 +20,7 @@ _panic(const char *file, int line, const char *fmt, ...)
 	cprintf("\n");
 
 	// Cause a breakpoint exception
-	while (1);
-	  //asm volatile("int3");
+	while (1)
+	  asm volatile("ebreak");
 }
 
