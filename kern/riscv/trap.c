@@ -148,6 +148,9 @@ trap_dispatch(struct Trapframe *tf)
        tf->a0 = syscall(tf->a0, tf->a1, tf->a2, tf->a3, tf->a4, tf->a5);
        tf->sepc += 4;
        return;
+     case T_SAMOPGFLT:
+       tf->sepc += 4;
+       return;
      default: break;
    }
    // Unexpected trap: The user process or the kernel has a bug.
@@ -192,6 +195,11 @@ trap(struct Trapframe *tf)
 	// Dispatch based on what type of trap occurred
 	trap_dispatch(tf);
 
+	
+	if (((tf->status & SSTATUS_SPP ) >> SPP_SHIFT) == 1) {
+	  // trapped from kernel mode
+	  return;
+	}
 	// Return to the current environment, which should be running.
 	assert(curenv && curenv->env_status == ENV_RUNNING);
 	env_run(curenv);
@@ -210,7 +218,9 @@ page_fault_handler(struct Trapframe *tf)
 
 	// LAB 3: Your code here.
 	if (((tf->status & SSTATUS_SPP ) >> SPP_SHIFT) == 1) {
+	  return;
 		panic("page-fault form kernel mode!");
+
 	}
 
 	// We've already handled kernel-mode exceptions, so if we get here,

@@ -21,7 +21,7 @@
 #define T_IPGFLT     12		// instruction page fault
 #define T_LPGFLT     13		// load page fault
 //#define T_RSVE     14		// reserve no use
-#define T_AMOPGFLT   15		// AMO page fault
+#define T_SAMOPGFLT  15		// store/AMO page fault
 
 #define TRAP_MASK    
 // Hardware IRQ numbers. We receive these as (IRQ_OFFSET+IRQ_WHATEVER)

@@ -37,26 +37,26 @@
  *                     |      Invalid Memory (*)      | --/--  KSTKGAP               |
  *                     +------------------------------+                              |
  *                     |     CPU1's Kernel Stack      | RW/--  KSTKSIZE              |
- *                     | - - - - - - - - - - - - - - -|                            PTSIZE  4MB
+ *                     | - - - - - - - - - - - - - - -|                            PTSIZE  2MB
  *                     |      Invalid Memory (*)      | --/--  KSTKGAP               |
  *                     +------------------------------+                              |
  *                     :              .               :                              |
  *                     :              .               :                              |
- *    MMIOLIM ------>  +------------------------------+ 0xfffffffe efc00000       ---+
+ *    MMIOLIM ------>  +------------------------------+ 0xfffffffe efe00000       ---+
  *                     |       Memory-mapped I/O      | RW/--  PTSIZE
- * ULIM, MMIOBASE -->  +------------------------------+ 0xffffffff ef800000
+ * ULIM, MMIOBASE -->  +------------------------------+ 0xffffffff efc00000
  *                     |  Cur. Page Table (User R-)   | R-/R-  PTSIZE
- *    UVPT      ---->  +------------------------------+ 0xffffffff ef400000
+ *    UVPT      ---->  +------------------------------+ 0xffffffff efa00000
  *                     |          RO PAGES            | R-/R-  PTSIZE
- *    UPAGES    ---->  +------------------------------+ 0xffffffff ef000000
+ *    UPAGES    ---->  +------------------------------+ 0xffffffff ef800000
  *                     |           RO ENVS            | R-/R-  PTSIZE
- * UTOP,UENVS ------>  +------------------------------+ 0xffffffff eec00000
+ * UTOP,UENVS ------>  +------------------------------+ 0xffffffff ee600000
  * UXSTACKTOP -/       |     User Exception Stack     | RW/RW  PGSIZE
- *                     +------------------------------+ 0xffffffff eebff000
+ *                     +------------------------------+ 0xffffffff ee5ff000
  *                     |       Empty Memory (*)       | --/--  PGSIZE
- *    USTACKTOP  --->  +------------------------------+ 0xffffffff eebfe000
+ *    USTACKTOP  --->  +------------------------------+ 0xffffffff ee5fe000
  *                     |      Normal User Stack       | RW/RW  PGSIZE
- *                     +------------------------------+ 0xffffffff eebfd000
+ *                     +------------------------------+ 0xffffffff ee5fd000
  *                     |                              |
  *                     |                              |
  *                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

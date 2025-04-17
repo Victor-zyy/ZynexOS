@@ -53,6 +53,8 @@ riscv_init(void)
 	ENV_CREATE(user_hello, ENV_TYPE_USER);
 
 	env_run(&envs[0]);
+
+	
 	while(1)
 	  monitor(NULL);
 }
