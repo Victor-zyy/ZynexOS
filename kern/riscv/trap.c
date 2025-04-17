@@ -149,7 +149,7 @@ trap_dispatch(struct Trapframe *tf)
        tf->sepc += 4;
        return;
      case T_SAMOPGFLT:
-       tf->sepc += 4;
+       page_fault_handler(tf);
        return;
      default: break;
    }
@@ -227,7 +227,7 @@ page_fault_handler(struct Trapframe *tf)
 	// the page fault happened in user mode.
 
 	// Destroy the environment that caused the fault.
-	cprintf("[%08x] user fault va %08x sepc %08x scause %08x\n",
+	cprintf("[%08x] user fault va %08lx sepc %08lx scause %08lx\n",
 		curenv->env_id, fault_va, tf->sepc, tf->scause);
 	print_trapframe(tf);
 	env_destroy(curenv);

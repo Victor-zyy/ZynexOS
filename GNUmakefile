@@ -269,11 +269,14 @@ grade:
 	./grade-lab$(LAB) $(GRADEFLAGS)
 
 
+prep-%:
+	$(V)$(MAKE) "INIT_CFLAGS=${INIT_CFLAGS} -DTEST=`case $* in *_*) echo $*;; *) echo user_$*;; esac`" $(IMAGES)
+
 run-%-nox-gdb: prep-% pre-qemu
-	$(QEMU) -nographic $(QEMUOPTS) -S
+	$(QEMU) -nographic $(QEMUOPTS) $(QEMUDEBUG)
 
 run-%-gdb: prep-% pre-qemu
-	$(QEMU) $(QEMUOPTS) -S
+	$(QEMU) $(QEMUOPTS) $(QEMUDEBUG)
 
 run-%-nox: prep-% pre-qemu
 	$(QEMU) -nographic $(QEMUOPTS)

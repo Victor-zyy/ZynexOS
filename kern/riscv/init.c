@@ -50,7 +50,13 @@ riscv_init(void)
 	env_init();
 	trap_init();
 
-	ENV_CREATE(user_hello, ENV_TYPE_USER);
+#if defined (TEST)
+	// Don't touch !
+	ENV_CREATE(TEST, ENV_TYPE_USER);
+#else
+	//ENV_CREATE(user_hello, ENV_TYPE_USER);
+	ENV_CREATE(user_divzero, ENV_TYPE_USER);
+#endif
 
 	env_run(&envs[0]);
 

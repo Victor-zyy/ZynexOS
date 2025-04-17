@@ -31,19 +31,18 @@ KERN_SRCFILES :=	kern/riscv/entry.S \
 
 # Binary program images to embed within the kernel.
 # Binary files for LAB3
-KERN_BINFILES :=	user/riscv/hello 
-#			user/riscv/buggyhello \
-			user/riscv/buggyhello2 \
-			user/riscv/evilhello \
-			user/riscv/testbss \
-			user/riscv/divzero \
-			user/riscv/breakpoint \
+KERN_BINFILES :=	user/riscv/hello \
 			user/riscv/softint \
-			user/riscv/badsegment \
+			user/riscv/divzero \
 			user/riscv/faultread \
 			user/riscv/faultreadkernel \
 			user/riscv/faultwrite \
 			user/riscv/faultwritekernel
+#			user/riscv/buggyhello \
+			user/riscv/buggyhello2 \
+			user/riscv/evilhello \
+			user/riscv/testbss \
+			user/riscv/breakpoint \
 
 # Only build files if they exist.
 KERN_SRCFILES := $(wildcard $(KERN_SRCFILES))
