@@ -572,15 +572,17 @@ page_lookup(pde_t *pgdir, void *va, pte_t **pte_store)
 {
 	// Fill this function in
 	pte_t *p_pte = pgdir_walk(pgdir, va, false);
+
+	if(pte_store != NULL){
+	  *pte_store = p_pte;
+	}
+
 	if(p_pte == NULL){
-		return NULL;
+	  return NULL;
 	}
 
 	struct PageInfo *pg_info = pa2page((PTE_PHY(*p_pte)));
 
-	if(pte_store != NULL){
-		*pte_store = p_pte;
-	}
 
 	return pg_info;
 }
@@ -686,14 +688,18 @@ user_mem_check(struct Env *env, const void *va, size_t len, int perm)
 	//
 	//
 	//
-	//cprintf("va: 0x%08x len: 0x%08x\n", va, len);
 	unsigned char *addr = (unsigned char *)va;
 	int k = 0; // this needs to be concerned
-	pte_t *pte_store;
+	pte_t *pte_store = NULL;
+	cprintf("pte_store address : 0x%08lx\n", &pte_store);
 	for(k; k <= len / PGSIZE ; k++){
 		page_lookup(curenv->env_pgdir, (void *)addr, &pte_store);	
-	  //cprintf("addr: 0x%08x len: 0x%08x\n", addr, len);
-		//cprintf("*pte_store : 0x%08x\n", *pte_store);
+		// memcheck error
+		if(pte_store == 0){
+			user_mem_check_addr = (uintptr_t)addr;
+			return -E_FAULT;
+		}
+		// memcheck permissions error
 		if(((*pte_store ) & (perm | PTE_V)) <= 0){
 			user_mem_check_addr = (uintptr_t)addr;
 			return -E_FAULT;
@@ -717,7 +723,7 @@ user_mem_assert(struct Env *env, const void *va, size_t len, int perm)
 	if (user_mem_check(env, va, len, perm | PTE_U) < 0) {
 		cprintf("[%08x] user_mem_check assertion failure for "
 			"va %08x\n", env->env_id, user_mem_check_addr);
-		//env_destroy(env);	// may not return
+		env_destroy(env);	// may not return
 	}
 }
 // --------------------------------------------------------------
