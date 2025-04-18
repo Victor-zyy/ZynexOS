@@ -9,6 +9,7 @@
 #include <inc/riscv/sbi.h>
 #include <kern/riscv/pmap.h>
 #include <kern/riscv/env.h>
+#include <kern/riscv/cpu.h>
 
 // These variables are set by riscv_detect_memory()
 size_t npages;			// Amount of physical memory (in pages)
@@ -48,6 +49,7 @@ riscv_detect_memory(void)
 // Set up memory mappings above UTOP.
 // --------------------------------------------------------------
 
+static void mem_init_mp(void);
 static void boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm);
 static void check_page_free_list(bool only_low_memory);
 static void check_page_alloc(void);
@@ -217,6 +219,10 @@ mem_init(void)
 	// Permissions: kernel RW, user NONE
 	// Your code goes here:
 	//
+
+	// Initialize the SMP-related parts of the memory map
+	mem_init_mp();
+
 	// 256MB for kernel
 	boot_map_region(kern_pgdir, KERNBASE + 0x80000000,  2 * PGSIZE * npages, 0x80000000, PTE_X | PTE_W | PTE_R);
 
@@ -235,15 +241,47 @@ mem_init(void)
 
 	// entry.S set the really important flags in cr0 (including enabling
 	// paging).  Here we configure the rest of the flags that we care about.
-	#if 0
-	cr0 = rcr0();
-	cr0 |= CR0_PE|CR0_PG|CR0_AM|CR0_WP|CR0_NE|CR0_MP;
-	cr0 &= ~(CR0_TS|CR0_EM);
-	lcr0(cr0);
-	#endif 
+
 	// Some more checks, only possible after kern_pgdir is installed.
 	check_page_installed_pgdir();
 }
+
+// Modify mappings in kern_pgdir to support SMP
+//   - Map the per-CPU stacks in the region [KSTACKTOP-PTSIZE, KSTACKTOP)
+//
+static void
+mem_init_mp(void)
+{
+	// Map per-CPU stacks starting at KSTACKTOP, for up to 'NCPU' CPUs.
+	//
+	// For CPU i, use the physical memory that 'percpu_kstacks[i]' refers
+	// to as its kernel stack. CPU i's kernel stack grows down from virtual
+	// address kstacktop_i = KSTACKTOP - i * (KSTKSIZE + KSTKGAP), and is
+	// divided into two pieces, just like the single stack you set up in
+	// mem_init:
+	//     * [kstacktop_i - KSTKSIZE, kstacktop_i)
+	//          -- backed by physical memory
+	//     * [kstacktop_i - (KSTKSIZE + KSTKGAP), kstacktop_i - KSTKSIZE)
+	//          -- not backed; so if the kernel overflows its stack,
+	//             it will fault rather than overwrite another CPU's stack.
+	//             Known as a "guard page".
+	//     Permissions: kernel RW, user NONE
+	//
+	// LAB 4: Your code here:
+	int i = 0;
+	//uintptr_t kstacktop_i = KSTACKTOP - i * (KSTKSIZE + KSTKGAP);
+	uintptr_t kstacktop_i = KSTACKTOP;
+	//[kstacktop_i - KSTKSIZE, kstacktop_i]
+	//[kstacktop_i - (KSTKSIZE + KSTKGAP), kstacktop_i - KSTKSIZE)
+	//
+	for(i = 0; i < NCPU; i++)//ncpu which is detected numbers of cpus
+	{
+		boot_map_region(kern_pgdir, kstacktop_i - KSTKSIZE , KSTKSIZE, PADDR(percpu_kstacks[i]), PTE_W | PTE_R );
+		kstacktop_i = KSTACKTOP - (i + 1) * (KSTKSIZE + KSTKGAP);
+	}
+
+}
+
 // --------------------------------------------------------------
 // Tracking of physical pages.
 // The 'pages' array has one 'struct PageInfo' entry per physical page.
@@ -691,7 +729,6 @@ user_mem_check(struct Env *env, const void *va, size_t len, int perm)
 	unsigned char *addr = (unsigned char *)va;
 	int k = 0; // this needs to be concerned
 	pte_t *pte_store = NULL;
-	cprintf("pte_store address : 0x%08lx\n", &pte_store);
 	for(k; k <= len / PGSIZE ; k++){
 		page_lookup(curenv->env_pgdir, (void *)addr, &pte_store);	
 		// memcheck error
@@ -899,13 +936,18 @@ check_kern_pgdir(void)
 
 	// check phys mem
 	for (i = 0; i < npages * PGSIZE; i += PGSIZE)
-		assert(check_va2pa(pgdir, KERNBASE + 0x80000000 + i) == 0x80000000 + i);
+	  assert(check_va2pa(pgdir, KERNBASE + 0x80000000 + i) == 0x80000000 + i);
 
 	// check kernel stack
-	for (i = 0; i < KSTKSIZE; i += PGSIZE)
-		assert(check_va2pa(pgdir, KSTACKTOP - KSTKSIZE + i) == PADDR(bootstack) + i);
-	assert(check_va2pa(pgdir, KSTACKTOP - PTSIZE) == ~0);
-
+	// (updated in lab 4 to check per-CPU kernel stacks)
+	for (n = 0; n < NCPU; n++) {
+		uint64_t base = KSTACKTOP - (KSTKSIZE + KSTKGAP) * (n + 1);
+		for (i = 0; i < KSTKSIZE; i += PGSIZE)
+			assert(check_va2pa(pgdir, base + KSTKGAP + i)
+				== PADDR(percpu_kstacks[n]) + i);
+		for (i = 0; i < KSTKGAP; i += PGSIZE)
+			assert(check_va2pa(pgdir, base + i) == ~0);
+	}
 	// check PDE permissions
 	// assert(pgdir[i] & PTE_W); differs from riscv, only PTE has attribute PTE_W
 	cprintf("check_kern_pgdir() succeeded!\n");
@@ -922,7 +964,6 @@ check_va2pa(pde_t *pgdir, uintptr_t va)
 	// do some necessay before to shrink the 4-level page to 2-level page
 	pgdir = (pde_t *)PDE_ADDR(pgdir[PD0X(va)]);
 	pgdir = (pde_t *)PDE_ADDR(pgdir[PD1X(va)]);
-
 	pgdir = &pgdir[PD2X(va)];
 	if (!(*pgdir & PTE_V))
 		return ~0;
