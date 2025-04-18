@@ -50,7 +50,7 @@ riscv_detect_memory(void)
 // --------------------------------------------------------------
 
 static void mem_init_mp(void);
-static void boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm);
+static void boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, uint64_t perm);
 static void check_page_free_list(bool only_low_memory);
 static void check_page_alloc(void);
 static void check_kern_pgdir(void);
@@ -532,7 +532,7 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 //
 // Hint: the TA solution uses pgdir_walk
 static void
-boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm)
+boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, uint64_t perm)
 {
 	// Fill this function in
 	size_t n_pages = size / PGSIZE;
@@ -687,6 +687,58 @@ tlb_invalidate(pde_t *pgdir, void *va)
   local_flush_tlb_page_asid(ROUNDDOWN((unsigned long)va, PGSIZE), read_asid());
 }
 
+//
+// Reserve size bytes in the MMIO region and map [pa,pa+size) at this
+// location.  Return the base of the reserved region.  size does *not*
+// have to be multiple of PGSIZE.
+// Like uart/pci/clint/plic these are all devices and peripherals
+//
+void *
+mmio_map_region(physaddr_t pa, size_t size)
+{
+	// Where to start the next region.  Initially, this is the
+	// beginning of the MMIO region.  Because this is static, its
+	// value will be preserved between calls to mmio_map_region
+	// (just like nextfree in boot_alloc).
+	static uintptr_t base = MMIOBASE;
+	static char *nextfree = NULL;
+	char *result;
+
+	if(!nextfree){
+		nextfree = (char *)base;
+		result = nextfree;
+	}
+
+	// Reserve size bytes of virtual memory starting at base and
+	// map physical pages [pa,pa+size) to virtual addresses
+	// [base,base+size).  Since this is device memory and not
+	// regular DRAM, you'll have to tell the CPU that it isn't
+	// safe to cache access to this memory.  Luckily, the page
+	// tables provide bits for this purpose; simply create the
+	// mapping with PTE_PCD|PTE_PWT (cache-disable and
+	// write-through) in addition to PTE_W.  (If you're interested
+	// in more details on this, see section 10.5 of IA32 volume
+	// 3A.)
+	// But in riscv, the PMBT says that, if value equals 2 means that
+	// IO memory and cache disable , strong memory consistence
+	//
+	// Be sure to round size up to a multiple of PGSIZE and to
+	// handle if this reservation would overflow MMIOLIM (it's
+	// okay to simply panic if this happens).
+	//
+	// Hint: The staff solution uses boot_map_region.
+	//
+	// Your code here:
+	result = nextfree;
+	if(ROUNDUP(base + size, PGSIZE) > MMIOLIM)
+		panic("mmio_map_region overflow MMIOLIM");
+	boot_map_region(kern_pgdir, (uintptr_t )result, ROUNDUP(size, PGSIZE), pa, PTE_W | PTE_R | PTE_IO);
+	
+	nextfree += ROUNDUP(size, PGSIZE); 
+	//panic("mmio_map_region not implemented");
+	return (void *)result;	
+}
+
 static uintptr_t user_mem_check_addr;
 
 //
@@ -722,10 +774,7 @@ user_mem_check(struct Env *env, const void *va, size_t len, int perm)
 	// |-----| <-- not aligned  but len is 
 	// |-----|
 	// |-----|
-	//
-	//
-	//
-	//
+
 	unsigned char *addr = (unsigned char *)va;
 	int k = 0; // this needs to be concerned
 	pte_t *pte_store = NULL;

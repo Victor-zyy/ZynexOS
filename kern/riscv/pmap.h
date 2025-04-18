@@ -67,6 +67,8 @@ struct PageInfo *page_lookup(pde_t *pgdir, void *va, pte_t **pte_store);
 void	page_decref(struct PageInfo *pp);
 
 void	tlb_invalidate(pde_t *pgdir, void *va);
+void * mmio_map_region(physaddr_t pa, size_t size);
+
 void user_mem_assert(struct Env *env, const void *va, size_t len, int perm);
 
 static inline physaddr_t
