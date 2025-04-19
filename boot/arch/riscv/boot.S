@@ -97,8 +97,8 @@ _ddr_initialize:
 	.globl _boot_status
 	.type _boot_status, %object
 _boot_status:
-	.dword	1
+	.dword	0
 
 	.type _relocate_lottery, %object
 _relocate_lottery:	
-	.dword	0
+	.dword	1

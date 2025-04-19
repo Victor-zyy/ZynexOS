@@ -170,3 +170,17 @@ int sbi_remote_sfence_vma_asid(const unsigned long *hart_mask,
 				hart_mask, start, size, asid, 0);
 }
 
+
+
+/**
+ * sbi_hartcount() - Gets hart counts from the sbi_platform it parse the fdt tree
+ *
+ * Returns the value of the total number of harts
+ */
+long sbi_hartcount(void)
+{
+	struct sbiret ret;
+	ret = sbi_ecall(SBI_EXT_BASE,SBI_EXT_BASE_GET_HARTCOUNT, 0, 0, 0, 0, 0, 0);
+
+	return ret.value;
+}

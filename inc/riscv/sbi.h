@@ -30,6 +30,7 @@
 #define SBI_EXT_BASE_GET_MSG			0x7
 #define SBI_EXT_BASE_GET_MEMSTART		0x8
 #define SBI_EXT_BASE_GET_MEMSIZE		0x9
+#define SBI_EXT_BASE_GET_HARTCOUNT		0xa
 
 /* SBI function IDs for TIME extension*/
 #define SBI_EXT_TIME_SET_TIMER			0x0
@@ -106,4 +107,7 @@ long sbi_firmware_getend(void);
 
 long sbi_mem_getstart(void);
 long sbi_mem_getsize(void);
+
+
+long sbi_hartcount(void);
 #endif
