@@ -44,13 +44,13 @@
 #define SBI_FIRMWARE    (0x80000000)
 #define NOR_FALSH_BASE  (0x20000000)
 
+extern char _boot_status[];
 void readblock(unsigned long, unsigned long, unsigned long);
 
 void
 bootmain(unsigned int hartid, void *fdt)
 {
 	struct Proghdr *ph, *eph;
-	
 	void (*firmware_entry)(int hartid, void *fdt);
 
 	firmware_entry = (void (*)(int, void*))SBI_FIRMWARE;
@@ -72,7 +72,9 @@ bootmain(unsigned int hartid, void *fdt)
 	  if(ph->p_type == ELF_PROG_LOAD)
 	    readblock(ph->p_pa, ph->p_memsz, ph->p_offset + 0x100000);
 	}
-
+	// set the _boot_status in boot.S to indicate now it can jump to opensbi firmware
+	atomic_add(1, (unsigned long*)_boot_status);
+	//atomic_add(1, (unsigned long*)0x8000);
 	// call the entry point from the ELF header
 	// note: does not return!
 	//((void (*)(void)) (ELFHDR->e_entry))();

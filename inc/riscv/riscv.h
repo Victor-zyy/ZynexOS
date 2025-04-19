@@ -73,4 +73,12 @@ cpunum(void)
   return 0;
 }
 
+static inline void
+atomic_add(int i, unsigned long* p){
+  unsigned long result = 0;
+  asm volatile("amoadd.d %[result], %[i], (%[p])\n"
+	       :[result]"=&r"(result), [p]"+r"(p)
+	       :[i]"r"(i)
+	       :"memory");
+}
 #endif /* !_INC_RISCV_H */
