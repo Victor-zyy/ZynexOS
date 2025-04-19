@@ -8,6 +8,12 @@
 # Shift Right Logical 
 #define SRL(val, shamt)		(((val) >> (shamt)) & ~(-1 << (32 - (shamt))))
 
+#temporary save register
+.macro	MOV_3R __d0, __s0, __d1, __s1, __d2, __s2
+	add	\__d0, \__s0, zero
+	add	\__d1, \__s1, zero
+	add	\__d2, \__s2, zero
+.endm
 
 ###################################################################
 # The kernel (this code) is linked at address ~(KERNBASE +  0x200000Meg), 
@@ -51,8 +57,11 @@ entry:
 
 	# Load the physical address of entry_pgdir into cr3.  entry_pgdir
 	# is defined in entrypgdir.c.
+
+	MOV_3R	s0, a0, s1, a1, s2, a2
 	// temp page table for temp use
 	call    _page_table_first_create
+	MOV_3R	a0, s0, a1, s1, a2, s2
 
 	# Now paging is enabled, but we're still running at physical 0x80000000 address
 	# (why is this okay?) - identical mapping.  Jump up above KERNBASE before entering
