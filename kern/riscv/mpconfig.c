@@ -7,6 +7,7 @@
 #include <inc/riscv/riscv.h>
 #include <inc/riscv/mmu.h>
 #include <inc/riscv/env.h>
+#include <inc/riscv/sbi.h>
 #include <kern/riscv/cpu.h>
 #include <kern/riscv/pmap.h>
 
@@ -61,6 +62,8 @@ mp_init(unsigned long hartid)
 
   // do some necessary check
   assert(hartid <= ncpu);
+  // clear the set_bit in cpu_mask
+  cpu_mask &= ~(1 << (uint8_t)hartid);
   // assign the bsp cpuinfo
   bootcpu = &cpus[hartid];
 }

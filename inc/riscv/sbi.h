@@ -31,6 +31,7 @@
 #define SBI_EXT_BASE_GET_MEMSTART		0x8
 #define SBI_EXT_BASE_GET_MEMSIZE		0x9
 #define SBI_EXT_BASE_GET_HARTCOUNT		0xa
+#define SBI_EXT_BASE_GET_HARTID                 0xb
 
 /* SBI function IDs for TIME extension*/
 #define SBI_EXT_TIME_SET_TIMER			0x0
@@ -110,4 +111,6 @@ long sbi_mem_getsize(void);
 
 
 long sbi_hartcount(void);
+int sbi_boot_ap(unsigned long apid, unsigned long bootaddr, unsigned long nextmode);
+int sbi_cpunum(void);
 #endif

@@ -37,10 +37,14 @@ _save_context:
 	addi	sp, sp, -PT_SIZE
 	sd	t0, PT_T0(sp)
 
+	
 	// save the stack
 	csrr 	t0, sscratch
 	sd	t0, PT_SP(sp)
 	
+	li	t0, 0
+	csrw	sscratch, t0
+
 	sd	ra, PT_RA(sp)
 	sd	fp, PT_FP(sp)
 	sd	s0, PT_S0(sp)

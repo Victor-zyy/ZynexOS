@@ -184,3 +184,30 @@ long sbi_hartcount(void)
 
 	return ret.value;
 }
+
+/**
+ * sbi_boot_ap() - boot the aps by bsp, using the ipi interrupt
+ *
+ * Returns the value of the total number of harts
+ */
+int sbi_boot_ap(unsigned long apid, unsigned long bootaddr, unsigned long nextmode)
+{
+	struct sbiret ret;
+	ret = sbi_ecall(SBI_EXT_HSM,SBI_EXT_HSM_HART_START, apid, bootaddr, nextmode, 0, 0, 0);
+
+	return ret.error;
+}
+
+
+/**
+ * sbi_cpunum() - get the hartid from M-mode use sbi ecall mechanism
+ *
+ * Returns the value of the hartid
+ */
+int sbi_cpunum(void)
+{
+	struct sbiret ret;
+	ret = sbi_ecall(SBI_EXT_BASE,SBI_EXT_BASE_GET_HARTID, 0, 0, 0, 0, 0, 0);
+
+	return ret.value;
+}

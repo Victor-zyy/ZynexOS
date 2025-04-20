@@ -35,7 +35,7 @@ extern physaddr_t lapicaddr;        // Physical MMIO address of the local APIC
 // Per-CPU kernel stacks
 extern unsigned char percpu_kstacks[NCPU][KSTKSIZE];
 
-int cpunum(void);
+#define cpunum() sbi_cpunum()
 #define thiscpu (&cpus[cpunum()])
 
 void mp_init(unsigned long hartid);
@@ -43,5 +43,6 @@ void lapic_init(void);
 void lapic_startap(uint8_t apicid, uint32_t addr);
 void lapic_eoi(void);
 void lapic_ipi(int vector);
+
 
 #endif

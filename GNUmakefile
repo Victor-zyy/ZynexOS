@@ -36,6 +36,7 @@ TOP = .
 ifeq ($(ARCH),riscv)
 # try to infer the correct GCCPREFIX
 GCCPREFIX =riscv64-linux-gnu-
+#GCCPREFIX =/home/zyy/tools/riscv/bin/riscv64-unknown-linux-gnu-
 else
 GCCPREFIX =i386-jos-elf-
 endif

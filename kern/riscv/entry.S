@@ -41,7 +41,9 @@ _start = RELOC(entry)
 
 .globl entry
 entry:
-
+	# clear the interrupt
+	csrw CSR_SIE, zero
+	csrw CSR_SIP, zero
 	# We haven't set up virtual memory yet, so we're running from
 	# the physical address the boot loader loaded the kernel at: 1MB
 	# (plus a few bytes).  However, the C code is linked to run at

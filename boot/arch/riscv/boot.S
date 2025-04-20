@@ -28,7 +28,6 @@ start:
 	beq 	a6, a7, _try_lottery
 
 _try_lottery:
-	
 	lla	a6, _relocate_lottery
 	li	a7, 1
 	amoadd.w a6, a7, (a6)
@@ -66,7 +65,13 @@ _try_lottery:
 	call   bootmain
 	
 _wait_boot_done:
-	la	t0, _boot_status
+
+	/* Setup temporary trap handler */
+	lla	s4, _start_hang
+	csrw	CSR_MTVEC, s4
+
+	mv	tp, zero
+	lla	t0, _boot_status
 	li	t1, 1 // 1 means _boot_status == 1
 1:	ld	t2, (t0)
 	bgt 	t1, t2, 1b
@@ -74,8 +79,8 @@ _wait_boot_done:
 	li 	t0, 0x800
 	slli	t0, t0, 20
 	csrr	a0, mhartid
-	li	a1, 0x802
-	slli	a1, a1, 20
+
+	# a1 doesn't reset
 	jr	t0
 	
 	.section .text, "ax", %progbits

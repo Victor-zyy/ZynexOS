@@ -67,11 +67,6 @@ set_status_sum(bool sum)
 		__asm__ __volatile__("wfi" ::: "memory"); \
 	} while (0)
 
-static inline int
-cpunum(void)
-{
-  return 0;
-}
 
 static inline void
 atomic_add(int i, unsigned long* p){
@@ -81,4 +76,45 @@ atomic_add(int i, unsigned long* p){
 	       :[i]"r"(i)
 	       :"memory");
 }
+
+#define __axchg(ptr, new, size)							\
+	({									\
+		__typeof__(ptr) __ptr = (ptr);					\
+		__typeof__(new) __new = (new);					\
+		__typeof__(*(ptr)) __ret;					\
+		switch (size) {							\
+		case 4:								\
+			__asm__ __volatile__ (					\
+				"	amoswap.w.aqrl %0, %2, %1\n"		\
+				: "=r" (__ret), "+A" (*__ptr)			\
+				: "r" (__new)					\
+				: "memory");					\
+			break;							\
+		case 8:								\
+			__asm__ __volatile__ (					\
+				"	amoswap.d.aqrl %0, %2, %1\n"		\
+				: "=r" (__ret), "+A" (*__ptr)			\
+				: "r" (__new)					\
+				: "memory");					\
+			break;							\
+		default:							\
+			break;							\
+		}								\
+		__ret;								\
+	})
+
+#define axchg(ptr, x)								\
+	({									\
+		__typeof__(*(ptr)) _x_ = (x);					\
+		(__typeof__(*(ptr))) __axchg((ptr), _x_, sizeof(*(ptr)));	\
+	})
+
+static inline
+unsigned long atomic_raw_xchg(volatile unsigned *ptr,
+				    unsigned long newval)
+{
+	/* Atomically set new value and return old value. */
+	return axchg(ptr, newval);
+}
+
 #endif /* !_INC_RISCV_H */
