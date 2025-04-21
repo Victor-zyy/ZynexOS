@@ -9,6 +9,9 @@
 #include <kern/riscv/monitor.h>
 #include <kern/riscv/env.h>
 #include <kern/riscv/syscall.h>
+#include <kern/riscv/cpu.h>
+#include <kern/riscv/sched.h>
+#include <kern/riscv/spinlock.h>
 
 
 /* For debugging, so print_trapframe can distinguish between printing
@@ -54,16 +57,17 @@ void
 trap_init(void)
 {
 	// LAB 3: Your code here.
-
 	// Per-CPU setup 
 	trap_init_percpu();
 }
 
-// Initialize and load the per-CPU TSS and IDT
+// Initialize and load the per-CPU kern_sp
 void
 trap_init_percpu(void)
 {
+  thiscpu->kern_sp = (uintptr_t)(KSTACKTOP - cpunum() * (KSTKSIZE + KSTKGAP));
 }
+
 
 void
 print_trapframe(struct Trapframe *tf)
@@ -153,8 +157,10 @@ trap_dispatch(struct Trapframe *tf)
        return;
      default: break;
    }
+
    // Unexpected trap: The user process or the kernel has a bug.
     print_trapframe(tf);
+
     if (((tf->status & SSTATUS_SPP) >> SPP_SHIFT ) == 1)
 	    panic("unhandled trap in kernel");
     else {
@@ -169,16 +175,35 @@ trap(struct Trapframe *tf)
 	// The environment may have set DF and some versions
 	// of GCC rely on DF being clear
 
+
+        // Halt the CPU if some other CPU has called panic()
+        extern char *panicstr;
+        if (panicstr)
+	  while(1);
+        // Re-acqurie the big kernel lock if we were halted in
+        // sched_yield()
+        if (atomic_raw_xchg(&thiscpu->cpu_status, CPU_STARTED) == CPU_HALTED)
+              lock_kernel();
+
 	// Check that interrupts are disabled.  If this assertion
 	// fails, DO NOT be tempted to fix it by inserting a "cli" in
 	// the interrupt path.
 	assert(!(read_status() & SSTATUS_SIE));
 
-	cprintf("Incoming TRAP frame at %p\n", tf);
-
 	if (((tf->status & SSTATUS_SPP ) >> SPP_SHIFT) == 0) {
 		// Trapped from user mode.
-		assert(curenv);
+                // Acquire the big kernel lock before doing any
+                // serious kernel work.
+                // LAB 4: Your code here.
+                assert(curenv);
+                lock_kernel();
+
+                // Garbage collect if current enviroment is a zombie
+                if (curenv->env_status == ENV_DYING) {
+                        env_free(curenv);
+                        curenv = NULL;
+                        sched_yield();
+                }
 
 		// Copy trap frame (which is currently on the stack)
 		// into 'curenv->env_tf', so that running the environment
@@ -195,14 +220,20 @@ trap(struct Trapframe *tf)
 	// Dispatch based on what type of trap occurred
 	trap_dispatch(tf);
 
-	
-	if (((tf->status & SSTATUS_SPP ) >> SPP_SHIFT) == 1) {
+       // If we made it to this point, then no other environment was
+       // scheduled, so we should return to the current environment
+       // if doing so makes sense.
+       if (curenv && curenv->env_status == ENV_RUNNING)
+               env_run(curenv);
+       else
+               sched_yield();
+
+       #if 0
+       if (((tf->status & SSTATUS_SPP ) >> SPP_SHIFT) == 1) {
 	  // trapped from kernel mode
 	  return;
-	}
-	// Return to the current environment, which should be running.
-	assert(curenv && curenv->env_status == ENV_RUNNING);
-	env_run(curenv);
+       }
+       #endif
 }
 
 
@@ -218,8 +249,7 @@ page_fault_handler(struct Trapframe *tf)
 
 	// LAB 3: Your code here.
 	if (((tf->status & SSTATUS_SPP ) >> SPP_SHIFT) == 1) {
-		panic("page-fault form kernel mode!");
-
+	  panic("page-fault va : 0x%08lx form kernel mode!", fault_va);
 	}
 
 	// We've already handled kernel-mode exceptions, so if we get here,

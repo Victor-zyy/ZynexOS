@@ -27,7 +27,12 @@ KERN_SRCFILES :=	kern/riscv/entry.S \
 			kern/riscv/env.c  \
 			kern/riscv/syscall.c  \
 			kern/riscv/trapentry.S  \
-			kern/riscv/trap.c 
+			kern/riscv/trap.c \
+			kern/riscv/mpentry.S \
+			kern/riscv/lapic.c \
+			kern/riscv/spinlock.c \
+			kern/riscv/sched.c \
+			kern/riscv/mpconfig.c 
 
 # Binary program images to embed within the kernel.
 # Binary files for LAB3
@@ -44,6 +49,25 @@ KERN_BINFILES :=	user/riscv/hello \
 			user/riscv/buggyhello2  \
 			user/riscv/evilhello 
 
+# Binary files for LAB4
+KERN_BINFILES +=	user/riscv/idle \
+			user/riscv/yield
+#			user/riscv/dumbfork \
+			user/riscv/stresssched \
+			user/riscv/faultdie \
+			user/riscv/faultregs \
+			user/riscv/faultalloc \
+			user/riscv/faultallocbad \
+			user/riscv/faultnostack \
+			user/riscv/faultbadhandler \
+			user/riscv/faultevilhandler \
+			user/riscv/forktree \
+			user/riscv/sendpage \
+			user/riscv/spin \
+			user/riscv/fairness \
+			user/riscv/pingpong \
+			user/riscv/pingpongs \
+			user/riscv/primes
 # Only build files if they exist.
 KERN_SRCFILES := $(wildcard $(KERN_SRCFILES))
 

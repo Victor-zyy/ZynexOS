@@ -13,6 +13,12 @@
 #include <kern/riscv/trap.h>
 #include <inc/riscv/env.h>
 
+#include <kern/riscv/cpu.h>
+#include <kern/riscv/spinlock.h>
+#include <kern/riscv/sched.h>
+
+static void boot_aps(void);
+
 #define BANNER						     \
      "   ______                            _____  _____  \n" \
      "  |___  /                           |  _  |/  ___| \n" \
@@ -22,6 +28,7 @@
      "  \\_____/ \\__, ||_| |_| \\___|/_/\\_\\  \\___/ \\____/  \n" \
      "          __/ |                                    \n" \
      "          |___/                              \n\n"
+
 
 void
 riscv_init(unsigned int hartid)
@@ -46,32 +53,106 @@ riscv_init(unsigned int hartid)
 	// memory management
 	mem_init();
 
+	cprintf("BSP boothart id : %d\n", hartid);
 	// environment
 	env_init();
 	trap_init();
+
+	// SMP configuration
+	mp_init(hartid);
+	lapic_init();
+
+	// enable timer interrupts and etc.
+	// lock kernel
+	lock_kernel();
+
+	// After lock the kernel, now we strap the aps
+	boot_aps();
 
 #if defined (TEST)
 	// Don't touch !
 	ENV_CREATE(TEST, ENV_TYPE_USER);
 #else
+	ENV_CREATE(user_yield, ENV_TYPE_USER);
 	ENV_CREATE(user_hello, ENV_TYPE_USER);
 	//ENV_CREATE(user_divzero, ENV_TYPE_USER);
 #endif
 
-	env_run(&envs[0]);
-
-	
-	while(1)
-	  monitor(NULL);
+	sched_yield();
 }
 
+// While boot_aps is booting a given CPU, it communicates the per-core
+// stack pointer that should be loaded by mpentry.S to that CPU in
+// this variable.
+void *mpentry_kstack;
+
+// Start the non-boot (AP) processors.
+static void
+boot_aps(void)
+{
+	extern unsigned char mpentry_start[], mpentry_end[];
+	void *code;
+	struct CpuInfo *c;
+	uint8_t i = 0;
+	uint8_t ret = 0;
+
+	if(1 == ncpu)
+	  return;
+	// Write entry code to unused memory at MPENTRY_PADDR
+	code = KADDR(MPENTRY_PADDR);
+	memmove(code, mpentry_start, mpentry_end - mpentry_start);
+
+	// Boot each AP one at a time
+	ret = cpu_mask;
+	c   = cpus;
+	for (i = 0; i < 8; i++){
+	  if(ret & 0x1){
+	    c->cpu_id = i;
+	    // Tell mpentry.S what stack to use 
+	    mpentry_kstack = percpu_kstacks[i] + KSTKSIZE;
+	    sbi_boot_ap(c->cpu_id, MPENTRY_PADDR, 1); 
+	    // Wait for the CPU to finish some basic setup in mp_main()
+	    while(c->cpu_status != CPU_STARTED)
+		    ;
+	  }
+	  c++;
+	  ret = ret >> 1;
+	}
+}
+
+// Setup code for APs
+void
+mp_main(void)
+{
+	// We are in high EIP now, safe to switch to kern_pgdir 
+        load_satp(PADDR(kern_pgdir));
+	cprintf("SMP: CPU %d starting\n", cpunum());
+
+	lapic_init();
+	env_init_percpu();
+	trap_init_percpu();
+	atomic_raw_xchg(&thiscpu->cpu_status, CPU_STARTED);
+
+	// Now that we have finished some basic setup, call sched_yield()
+	// to start running processes on this CPU.  But make sure that
+	// only one CPU can enter the scheduler at a time!
+	//
+	// Your code here:
+	lock_kernel();
+
+	sched_yield();
+
+	// Remove this after you finish Exercise 6
+	// for (;;);
+
+}
 
 
 /*
  * Variable panicstr contains argument to first call to panic; used as flag
  * to indicate that the kernel has already called panic.
  */
-const char *panicstr;
+const char *panicstr ;
 
 /*
  * Panic is called on unresolvable fatal errors.

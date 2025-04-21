@@ -319,12 +319,18 @@ page_init(void)
 	for(i = 0; i < firmmem / PGSIZE; i++){
 	    pages[i].pp_ref = 0;
 	    pages[i].pp_link = NULL;
-	}
+	};
 	// 2. opensbi upwards mem is free
 	for(i = firmmem / PGSIZE; i < npages_basemem; i++){
-		pages[i].pp_ref = 0;
-		pages[i].pp_link = page_free_list;
-		page_free_list = &pages[i];
+	  // we ask for one page to bootAPs code
+	  if((MPENTRY_PADDR - 0x80000000) / PGSIZE == i){
+	    pages[i].pp_ref = 0;
+	    pages[i].pp_link = NULL;
+	    continue;
+	  }
+	    pages[i].pp_ref = 0;
+	    pages[i].pp_link = page_free_list;
+	    page_free_list = &pages[i];
 	}
 	// 3. EXTPHYMem some in use some is free
 	// kernel is in 0x10000 base address
@@ -669,22 +675,15 @@ page_remove(pde_t *pgdir, void *va)
 // edited are the ones currently in use by the processor.
 //
 
-static inline void local_flush_tlb_page_asid(unsigned long addr,
-                 unsigned long asid)
-{
-         __asm__ __volatile__ ("sfence.vma %0, %1"
-                         :
-                         : "r" (addr), "r" (asid)
-                         : "memory");
-}
 
 void
 tlb_invalidate(pde_t *pgdir, void *va)
 {
-	// Flush the entry only if we're modifying the current address space.
-	// For now, there is only one address space, so always invalidate.
+  // Flush the entry only if we're modifying the current address space.
+  // For now, there is only one address space, so always invalidate.
   pgdir = pgdir; /* FIXME: in case of warning */
-  local_flush_tlb_page_asid(ROUNDDOWN((unsigned long)va, PGSIZE), read_asid());
+  if(!curenv || curenv->env_pgdir == pgdir)
+    local_flush_tlb_page_asid(ROUNDDOWN((unsigned long)va, PGSIZE), read_asid());
 }
 
 //
@@ -865,6 +864,8 @@ check_page_free_list(bool only_low_memory)
 		assert(page2pa(pp) != (firmmem + PHYMEMOFF) - PGSIZE);
 		assert(page2pa(pp) != (EXTPHYSMEM + PHYMEMOFF));
 		assert(page2pa(pp) < (EXTPHYSMEM + PHYMEMOFF) || (char *) page2kva(pp) >= first_free_page);
+		// add new assert checks for mpentry code 
+		assert(page2pa(pp) != MPENTRY_PADDR);
 
 		if (page2pa(pp) < (EXTPHYSMEM + PHYMEMOFF))
 			++nfree_basemem;
@@ -1029,6 +1030,7 @@ check_page(void)
 	struct PageInfo *fl;
 	pte_t *ptep, *ptep1;
 	void *va;
+	uintptr_t mm1, mm2;
 	int i;
 	extern pde_t entry_pgdir[];
 	pde_t *temp_pgdir;
@@ -1181,6 +1183,30 @@ check_page(void)
 	page_free(pp2);
 	page_free(pp3);
 	page_free(pp4);
+
+	// test mmio_map_region
+	mm1 = (uintptr_t) mmio_map_region(0, 4097);
+	mm2 = (uintptr_t) mmio_map_region(0, 4096);
+	// check that they're in the right region
+	assert(mm1 >= MMIOBASE && mm1 + 8096 < MMIOLIM);
+	assert(mm2 >= MMIOBASE && mm2 + 8096 < MMIOLIM);
+	// check that they're page-aligned
+	assert(mm1 % PGSIZE == 0 && mm2 % PGSIZE == 0);
+	// check that they don't overlap
+	assert(mm1 + 8096 <= mm2);
+	// check page mappings
+	assert(check_va2pa(kern_pgdir, mm1) == 0);
+	assert(check_va2pa(kern_pgdir, mm1+PGSIZE) == PGSIZE);
+	assert(check_va2pa(kern_pgdir, mm2) == 0);
+	assert(check_va2pa(kern_pgdir, mm2+PGSIZE) == ~0);
+	// check permissions
+	assert(*pgdir_walk(kern_pgdir, (void*) mm1, 0) & (PTE_W|PTE_IO));
+	assert(!(*pgdir_walk(kern_pgdir, (void*) mm1, 0) & PTE_U));
+	// clear the mappings
+	*pgdir_walk(kern_pgdir, (void*) mm1, 0) = 0;
+	*pgdir_walk(kern_pgdir, (void*) mm1 + PGSIZE, 0) = 0;
+	*pgdir_walk(kern_pgdir, (void*) mm2, 0) = 0;
+
 	cprintf("check_page() succeeded!\n");
 }
 // check page_insert, page_remove, &c, with an installed kern_pgdir

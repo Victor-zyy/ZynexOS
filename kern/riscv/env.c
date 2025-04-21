@@ -12,6 +12,9 @@
 #include <kern/riscv/pmap.h>
 #include <kern/riscv/trap.h>
 #include <kern/riscv/monitor.h>
+#include <kern/riscv/cpu.h>
+#include <kern/riscv/spinlock.h>
+#include <kern/riscv/sched.h>
 
 struct Env *envs = NULL;		// All environments
 struct Env *curenv = NULL;		// The current env
@@ -98,10 +101,14 @@ env_init(void)
 }
 
 // Load GDT and segment descriptors.
-// Riscv Arch 
+// Riscv Arch  use tp as CpuInfo data
 void
 env_init_percpu(void)
 {
+  asm volatile("\t mv tp, %0\n"
+	       :
+	       :"r"(thiscpu)
+	       :"memory");
 }
 
 //
@@ -247,7 +254,10 @@ region_alloc(struct Env *e, void *va, size_t len)
 	//   (Watch out for corner-cases!)
 	va = ROUNDDOWN(va, PGSIZE);
 	void * end = ROUNDUP(va + len, PGSIZE);
+
+	// tlb_flush
 	for(va; va < end; va += PGSIZE){
+	  local_flush_tlb_page_asid((unsigned long)va, read_asid());
 		// allocate one page 
 		struct PageInfo * pg_info = page_alloc(0);
 		if(pg_info == NULL){
@@ -404,7 +414,7 @@ env_free(struct Env *e)
 	// before freeing the page directory, just in case the page
 	// gets reused.
 	if (e == curenv)
-		load_satp(PADDR(kern_pgdir));
+	  load_satp(PADDR(kern_pgdir));
 
 	// Note the environment's demise.
 	cprintf("[%08x] free env %08x\n", curenv ? curenv->env_id : 0, e->env_id);
@@ -476,15 +486,26 @@ env_free(struct Env *e)
 
 //
 // Frees environment e.
+// If e was the current env, then runs a new environment (and does not return
+// to the caller).
 //
 void
 env_destroy(struct Env *e)
 {
-	env_free(e);
+        // If e is currently running on other CPUs, we change its state to
+        // ENV_DYING. A zombie environment will be freed the next time
+        // it traps to the kernel.
+        if (e->env_status == ENV_RUNNING && curenv != e) {
+                e->env_status = ENV_DYING;
+                return;
+        }
 
-	cprintf("Destroyed the only environment - nothing more to do!\n");
-	while (1)
-		monitor(NULL);
+        env_free(e);
+
+        if (curenv == e) {
+                curenv = NULL;
+                sched_yield();
+        }
 }
 
 
@@ -497,6 +518,11 @@ env_destroy(struct Env *e)
 void
 env_pop_tf(struct Trapframe *tf)
 {
+  
+	// Record the CPU we are running on for user-space debugging
+	curenv->env_cpunum = cpunum();
+
+	unlock_kernel();
 
 	asm volatile(
 		"\tmv sp, %0\n"

@@ -117,4 +117,13 @@ unsigned long atomic_raw_xchg(volatile unsigned *ptr,
 	return axchg(ptr, newval);
 }
 
+
+inline void local_flush_tlb_page_asid(unsigned long addr,
+                 unsigned long asid)
+{
+         __asm__ __volatile__ ("sfence.vma %0, %1"
+                         :
+                         : "r" (addr), "r" (asid)
+                         : "memory");
+}
 #endif /* !_INC_RISCV_H */
