@@ -6,7 +6,7 @@
 static inline int32_t
 syscall(int num, int check, uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4, uint64_t a5)
 {
-	uint64_t ret = 0;
+        register uint64_t ret asm("a0");
 
 	// Generic system call: pass system call number in AX,
 	// up to five parameters in DX, CX, BX, DI, SI.
@@ -29,12 +29,12 @@ syscall(int num, int check, uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4, 
         asm volatile ("ecall"
                       : "+r" (ret)
                       : "r" (a0), "r" (a1_), "r" (a2_), "r" (a3_), "r" (a4_), "r" (a5_)
-                      : "memory", "cc");
+                      : "memory");
 
 	if(check && ret > 0)
 		panic("syscall %d returned %d (> 0)", num, ret);
 
-	return (int32_t)ret;
+	return ret;
 }
 
 void

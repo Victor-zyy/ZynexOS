@@ -75,8 +75,8 @@ riscv_init(unsigned int hartid)
 #else
 	ENV_CREATE(user_yield, ENV_TYPE_USER); /* FIXME: envid 0 */
 	ENV_CREATE(user_yield, ENV_TYPE_USER); /* FIXME: envid 0 */
-	//ENV_CREATE(user_hello, ENV_TYPE_USER); /* FIXME: envid 0 */
-	//ENV_CREATE(user_yield, ENV_TYPE_USER); /* FIXME: envid 0 */
+	ENV_CREATE(user_hello, ENV_TYPE_USER); /* FIXME: envid 0 */
+	ENV_CREATE(user_yield, ENV_TYPE_USER); /* FIXME: envid 0 */
 #endif
 
 	sched_yield();

@@ -151,7 +151,8 @@ trap_dispatch(struct Trapframe *tf)
        return;
      case T_SYSCALL:
 	// Systemcall /* FIXME: user mode a6 as the return value from asm code */
-       tf->a6 = syscall(tf->a0, tf->a1, tf->a2, tf->a3, tf->a4, tf->a5);
+       // That is because the ecall you don't specify the a0 as the return val 
+       tf->a0 = syscall(tf->a0, tf->a1, tf->a2, tf->a3, tf->a4, tf->a5);
        tf->sepc += 4;
        return;
      case T_SAMOPGFLT:

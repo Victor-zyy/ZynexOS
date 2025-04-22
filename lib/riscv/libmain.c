@@ -14,7 +14,6 @@ libmain(int argc, char **argv)
 	// set thisenv to point at our Env structure in envs[].
 	// LAB 3: Your code here.
 	// thisenv = envs;
-  cprintf("sys_getenvid : 0x%08lx\n", sys_getenvid());
         thisenv = &envs[ENVX(sys_getenvid())];
 
 	// save the name of the program so that panic() can use it
