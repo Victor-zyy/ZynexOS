@@ -17,7 +17,6 @@
 #include <kern/riscv/sched.h>
 
 struct Env *envs = NULL;		// All environments
-struct Env *curenv = NULL;		// The current env
 static struct Env *env_free_list;	// Free environment list
 					// (linked by Env->env_link)
 
@@ -105,6 +104,8 @@ env_init(void)
 void
 env_init_percpu(void)
 {
+
+  set_status_sum(true);
   #if 0
   asm volatile("\t mv tp, %0\n"
 	       :
@@ -401,7 +402,6 @@ env_create(uint8_t *binary, enum EnvType type)
 	// 2.load binary into it
 	set_status_sum(true);
 	load_icode(env, binary);
-	cprintf("load_inode ok\n");
 	// 3.set its env_type
 	env->env_type = type;
 }

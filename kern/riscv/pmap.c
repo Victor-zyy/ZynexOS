@@ -276,7 +276,7 @@ mem_init_mp(void)
 	//
 	for(i = 0; i < NCPU; i++)//ncpu which is detected numbers of cpus
 	{
-		boot_map_region(kern_pgdir, kstacktop_i - KSTKSIZE , KSTKSIZE, PADDR(percpu_kstacks[i]), PTE_W | PTE_R | PTE_G);
+		boot_map_region(kern_pgdir, kstacktop_i - KSTKSIZE , KSTKSIZE, PADDR(percpu_kstacks[i]), PTE_W | PTE_R);
 		kstacktop_i = KSTACKTOP - (i + 1) * (KSTKSIZE + KSTKGAP);
 	}
 

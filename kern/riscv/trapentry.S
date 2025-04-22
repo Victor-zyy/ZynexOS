@@ -187,5 +187,4 @@ scratch_save_:
 	ld	t1, PT_T1(sp)
 	ld	t2, PT_T2(sp)
 	ld	sp, PT_SP(sp)
-	sfence.vma x0, x0
 	sret;

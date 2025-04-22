@@ -65,7 +65,10 @@ trap_init(void)
 void
 trap_init_percpu(void)
 {
+
   thiscpu->kern_sp = (uintptr_t)(KSTACKTOP - cpunum() * (KSTKSIZE + KSTKGAP));
+  cprintf("thiscpu->kern_sp : 0x%08lx\n", thiscpu->kern_sp);
+  
 }
 
 
@@ -240,7 +243,7 @@ trap(struct Trapframe *tf)
 void
 page_fault_handler(struct Trapframe *tf)
 {
-	uint32_t fault_va;
+	uint64_t fault_va;
 
 	// Read processor's CR2 register to find the faulting address
 	fault_va = tf->stval;

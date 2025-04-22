@@ -4,9 +4,10 @@
 #define JOS_KERN_ENV_H
 
 #include <inc/riscv/env.h>
+#include <kern/riscv/cpu.h>
 
 extern struct Env *envs;		// All environments
-extern struct Env *curenv;		// Current environment
+#define curenv (thiscpu->cpu_env)		// Current environment
 
 void	env_init(void);
 void	env_init_percpu(void);
