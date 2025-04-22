@@ -67,7 +67,6 @@ trap_init_percpu(void)
 {
 
   thiscpu->kern_sp = (uintptr_t)(KSTACKTOP - cpunum() * (KSTKSIZE + KSTKGAP));
-  cprintf("thiscpu->kern_sp : 0x%08lx\n", thiscpu->kern_sp);
   
 }
 
@@ -151,8 +150,8 @@ trap_dispatch(struct Trapframe *tf)
        monitor(tf);
        return;
      case T_SYSCALL:
-	// Systemcall
-       tf->a0 = syscall(tf->a0, tf->a1, tf->a2, tf->a3, tf->a4, tf->a5);
+	// Systemcall /* FIXME: user mode a6 as the return value from asm code */
+       tf->a6 = syscall(tf->a0, tf->a1, tf->a2, tf->a3, tf->a4, tf->a5);
        tf->sepc += 4;
        return;
      case T_SAMOPGFLT:
