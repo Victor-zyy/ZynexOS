@@ -42,21 +42,21 @@
  *                     +------------------------------+                              |
  *                     :              .               :                              |
  *                     :              .               :                              |
- *    MMIOLIM ------>  +------------------------------+ 0xfffffffe efe00000       ---+
+ *    MMIOLIM ------>  +------------------------------+ 0xffffff7f f0000000       ---+
  *                     |       Memory-mapped I/O      | RW/--  PTSIZE
- * ULIM, MMIOBASE -->  +------------------------------+ 0xffffffff efc00000
+ * ULIM, MMIOBASE -->  +------------------------------+ 0xfffffeff f0000000
  *                     |  Cur. Page Table (User R-)   | R-/R-  PTSIZE
- *    UVPT      ---->  +------------------------------+ 0xffffffff efa00000
+ *    UVPT      ---->  +------------------------------+ 0xfffffe7f f0000000
  *                     |          RO PAGES            | R-/R-  PTSIZE
- *    UPAGES    ---->  +------------------------------+ 0xffffffff ef800000
+ *    UPAGES    ---->  +------------------------------+ 0xfffffdff f0000000
  *                     |           RO ENVS            | R-/R-  PTSIZE
- * UTOP,UENVS ------>  +------------------------------+ 0xffffffff ee600000
+ * UTOP,UENVS ------>  +------------------------------+ 0xfffffd7f f0000000
  * UXSTACKTOP -/       |     User Exception Stack     | RW/RW  PGSIZE
- *                     +------------------------------+ 0xffffffff ee5ff000
+ *                     +------------------------------+
  *                     |       Empty Memory (*)       | --/--  PGSIZE
- *    USTACKTOP  --->  +------------------------------+ 0xffffffff ee5fe000
+ *    USTACKTOP  --->  +------------------------------+ 0xfffffcff f0000000
  *                     |      Normal User Stack       | RW/RW  PGSIZE
- *                     +------------------------------+ 0xffffffff ee5fd000
+ *                     +------------------------------+ 0xfffffc7f f0000000
  *                     |                              |
  *                     |                              |
  *                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -93,8 +93,9 @@
 #define KSTKGAP		(8*PGSIZE)   		// size of a kernel stack guard
 
 // Memory-mapped IO.
-#define MMIOLIM		(KSTACKTOP - PTSIZE)
-#define MMIOBASE	(MMIOLIM - PTSIZE)
+//#define MMIOLIM		(KSTACKTOP - PTSIZE)
+#define MMIOLIM		0xffffff7ff0000000
+#define MMIOBASE	0xfffffefff0000000
 
 #define ULIM		(MMIOBASE)
 
@@ -104,11 +105,11 @@
  */
 
 // User read-only virtual page table (see 'uvpt' below)
-#define UVPT		(ULIM - PTSIZE)
+#define UVPT		0xfffffe7ff0000000
 // Read-only copies of the Page structures
-#define UPAGES		(UVPT - PTSIZE)
+#define UPAGES		0xfffffdfff0000000
 // Read-only copies of the global env structures
-#define UENVS		(UPAGES - PTSIZE)
+#define UENVS		0xfffffd7ff0000000
 
 /*
  * Top of user VM. User can manipulate VA from UTOP-1 and down!
@@ -120,7 +121,7 @@
 #define UXSTACKTOP	UTOP
 // Next page left invalid to guard against exception stack overflow; then:
 // Top of normal user stack
-#define USTACKTOP	(UTOP - 2*PGSIZE)
+#define USTACKTOP	0xfffffcfff0000000
 
 // Where user programs generally begin
 #define UTEXT		(2*PTSIZE)

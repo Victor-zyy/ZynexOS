@@ -101,14 +101,16 @@ env_init(void)
 }
 
 // Load GDT and segment descriptors.
-// Riscv Arch  use tp as CpuInfo data
+// Riscv Arch  use tp as CpuInfo data /* FIXME: when the context is switched the tp is reset to zero */
 void
 env_init_percpu(void)
 {
+  #if 0
   asm volatile("\t mv tp, %0\n"
 	       :
 	       :"r"(thiscpu)
 	       :"memory");
+  #endif
 }
 
 //
@@ -159,8 +161,10 @@ env_setup_vm(struct Env *e)
 	e->env_pgdir[i] = kern_pgdir[i];
 	i = PD0X(UENVS);
 	e->env_pgdir[i] = kern_pgdir[i];
+
 	//kernel stack do what? env has one single KERNEL_STACK
-	i = PD0X(KSTACKTOP-KSTKSIZE);
+	//i = PD0X(KSTACKTOP-KSTKSIZE);
+	i = PD0X(MMIOBASE);
 	e->env_pgdir[i] = kern_pgdir[i];
 	//KERNBASE REMAP
 	for(i = PD0X(KERNBASE); i < 512; i++ ){
@@ -198,10 +202,12 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 		return r;
 
 	// Generate an env_id for this environment.
+	// /* FIXME: start form 1 */
 	generation = (e->env_id + (1 << ENVGENSHIFT)) & ~(NENV - 1);
 	if (generation <= 0)	// Don't create a negative env_id.
 		generation = 1 << ENVGENSHIFT;
 	e->env_id = generation | (e - envs);
+	e->env_id += 1;
 
 	// Set the basic status variables.
 	e->env_parent_id = parent_id;
@@ -226,6 +232,9 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 	e->env_tf.sp = USTACKTOP;
 	e->env_tf.status = read_status();
 	// You will set e->env_tf.tf_eip later.
+	// In order to handler the kernel stack, we use tp to pointed the env it self
+	// When the context is switched , then the tp is pointed another env of itself
+	e->env_tf.tp = (unsigned long)e; 
 
 	// commit the allocation
 	env_free_list = e->env_link;
@@ -361,6 +370,7 @@ load_icode(struct Env *e, uint8_t *binary)
 	// LAB 3: Your code here.
 	
 	struct PageInfo *pg_info = page_alloc(0);
+	//local_flush_tlb_page_asid((unsigned long)va, read_asid());
 	page_insert(e->env_pgdir, pg_info, (void *)(USTACKTOP-PGSIZE), PTE_U | PTE_W | PTE_R);
 	
 	return ;
@@ -414,7 +424,7 @@ env_free(struct Env *e)
 	// before freeing the page directory, just in case the page
 	// gets reused.
 	if (e == curenv)
-	  load_satp(PADDR(kern_pgdir));
+	  load_satp_asid(PADDR(kern_pgdir), 0);
 
 	// Note the environment's demise.
 	cprintf("[%08x] free env %08x\n", curenv ? curenv->env_id : 0, e->env_id);
@@ -521,7 +531,6 @@ env_pop_tf(struct Trapframe *tf)
   
 	// Record the CPU we are running on for user-space debugging
 	curenv->env_cpunum = cpunum();
-
 	unlock_kernel();
 
 	asm volatile(
@@ -572,7 +581,7 @@ env_run(struct Env *e)
 	curenv->env_status = ENV_RUNNING;
 	curenv->env_runs ++;
 
-	load_satp(PADDR(curenv->env_pgdir));
+	load_satp_asid(PADDR(curenv->env_pgdir), curenv->env_id & 0x3ff);
 	// Step 2:
 	//
 	env_pop_tf(&curenv->env_tf);

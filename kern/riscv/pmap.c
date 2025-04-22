@@ -182,7 +182,7 @@ mem_init(void)
 	//    - pages itself -- kernel RW, user NONE
 	// Your code goes here:
 
-	boot_map_region(kern_pgdir, UPAGES, ROUNDUP(sizeof(struct PageInfo) * npages, PGSIZE), PADDR(pages), PTE_U | PTE_R ); /* FIXME: PTE_R */
+	boot_map_region(kern_pgdir, UPAGES, ROUNDUP(sizeof(struct PageInfo) * npages, PGSIZE), PADDR(pages), PTE_U | PTE_R | PTE_G ); /* FIXME: PTE_R */
 
 
 	//////////////////////////////////////////////////////////////////////
@@ -193,7 +193,7 @@ mem_init(void)
 	//    - envs itself -- kernel RW, user NONE
 	// LAB 3: Your code here.
 
-	boot_map_region(kern_pgdir, UENVS, ROUNDUP(sizeof(struct Env) * NENV, PGSIZE), PADDR(envs), PTE_U | PTE_R);
+	boot_map_region(kern_pgdir, UENVS, ROUNDUP(sizeof(struct Env) * NENV, PGSIZE), PADDR(envs), PTE_U | PTE_R | PTE_G);
 
 	//////////////////////////////////////////////////////////////////////
 	// Use the physical memory that 'bootstack' refers to as the kernel
@@ -208,7 +208,7 @@ mem_init(void)
 	// Your code goes here:
 	//bootstack
 
-	boot_map_region(kern_pgdir, KSTACKTOP-KSTKSIZE, KSTKSIZE, PADDR(bootstack), PTE_W | PTE_R);
+	boot_map_region(kern_pgdir, KSTACKTOP-KSTKSIZE, KSTKSIZE, PADDR(bootstack), PTE_W | PTE_R | PTE_G);
 
 	//////////////////////////////////////////////////////////////////////
 	// Map all of physical memory at KERNBASE.
@@ -224,7 +224,7 @@ mem_init(void)
 	mem_init_mp();
 
 	// 256MB for kernel
-	boot_map_region(kern_pgdir, KERNBASE + 0x80000000,  2 * PGSIZE * npages, 0x80000000, PTE_X | PTE_W | PTE_R);
+	boot_map_region(kern_pgdir, KERNBASE + 0x80000000,  2 * PGSIZE * npages, 0x80000000, PTE_X | PTE_W | PTE_R | PTE_G);
 
 	// Check that the initial page directory has been set up correctly.
 	check_kern_pgdir();
@@ -276,7 +276,7 @@ mem_init_mp(void)
 	//
 	for(i = 0; i < NCPU; i++)//ncpu which is detected numbers of cpus
 	{
-		boot_map_region(kern_pgdir, kstacktop_i - KSTKSIZE , KSTKSIZE, PADDR(percpu_kstacks[i]), PTE_W | PTE_R );
+		boot_map_region(kern_pgdir, kstacktop_i - KSTKSIZE , KSTKSIZE, PADDR(percpu_kstacks[i]), PTE_W | PTE_R | PTE_G);
 		kstacktop_i = KSTACKTOP - (i + 1) * (KSTKSIZE + KSTKGAP);
 	}
 

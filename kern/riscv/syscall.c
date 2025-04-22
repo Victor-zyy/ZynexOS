@@ -10,6 +10,7 @@
 #include <kern/riscv/trap.h>
 #include <kern/riscv/syscall.h>
 #include <kern/riscv/console.h>
+#include <kern/riscv/sched.h>
 
 // Print a string to the system console.
 // The string is exactly 'len' characters long.
@@ -63,6 +64,13 @@ sys_env_destroy(envid_t envid)
 	return 0;
 }
 
+// Deschedule current environment and pick a different one to run.
+static void
+sys_yield(void)
+{
+	sched_yield();
+}
+
 // Dispatches to the correct kernel function, passing the arguments.
 int32_t
 syscall(uint64_t syscallno, uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4, uint64_t a5)
@@ -77,7 +85,8 @@ syscall(uint64_t syscallno, uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4, 
 	case SYS_cgetc: ret = sys_cgetc(); break;
 	case SYS_getenvid: ret = sys_getenvid(); break;
 	case SYS_env_destroy: ret = sys_env_destroy(a1); break;
-				
+	case SYS_yield: sys_yield(); ret = 0; break;
+	
 	default:
 		return -E_INVAL;
 	}

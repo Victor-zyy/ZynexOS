@@ -6,6 +6,7 @@
 
 #include <inc/riscv/csr.h>
 #include <inc/riscv/asm-offset.h>
+#include <inc/riscv/env.h>
 
 
 ###################################################################
@@ -47,7 +48,6 @@ _save_context:
 
 	sd	ra, PT_RA(sp)
 	sd	fp, PT_FP(sp)
-	sd	s0, PT_S0(sp)
 	sd	s1, PT_S1(sp)
 	sd	s2, PT_S2(sp)
 	sd	s3, PT_S3(sp)
@@ -61,6 +61,7 @@ _save_context:
 	sd	s11, PT_S11(sp)
 	sd	tp, PT_TP(sp)
 	sd	a0, PT_A0(sp)
+	sd	a0, PT_ORIG_A0(sp)
 	sd	a1, PT_A1(sp)
 	sd	a2, PT_A2(sp)
 	sd	a3, PT_A3(sp)
@@ -101,7 +102,6 @@ _alltraps_ret:
 	// now sp is set to trapframe bottom
 
 	ld	ra, PT_RA(sp)
-	ld	fp, PT_FP(sp)
 	ld	s0, PT_S0(sp)
 	ld	s1, PT_S1(sp)
 	ld	s2, PT_S2(sp)
@@ -123,7 +123,6 @@ _alltraps_ret:
 	ld	a5, PT_A5(sp)
 	ld	a6, PT_A6(sp)
 	ld	a7, PT_A7(sp)
-	ld	t2, PT_T2(sp)
 	ld	t3, PT_T3(sp)
 	ld	t4, PT_T4(sp)
 	ld	t5, PT_T5(sp)
@@ -132,8 +131,18 @@ _alltraps_ret:
 
 	// use t0 to set csr registers
 	ld	t0, PT_SEPC(sp)
-	csrw	sepc, t0
-	
+	csrw	sepc, 	t0
+
+	ld	t0, PT_ORIG_A0(sp)
+	addi	t0, t0, (-0xa)
+	bnez	t0, yield_sepc_remain
+	ld	t0, PT_SEPC(sp)
+	addi	t0,	t0, 0x4
+	csrw	sepc, 	t0
+
+yield_sepc_remain:	
+
+
 	ld	t0, PT_SCAUSE(sp)
 	csrw	scause, t0
 
@@ -158,10 +167,25 @@ _alltraps_ret:
 	
 	// sp finally
 scratch_save_:	
-	li 	t0, (KSTACKTOP)
-	csrw	sscratch, t0
+	// tp points to env of itself
+	// t0 equals to cpunum which the env runs on it
+	lw	t0,  ENV_CPUNUM_OFF(tp)
+	// t1 points to the cpu0 kstack top
+	// KSTKSIZE + KSTKGAP
+	li	t1, (KSTKSIZE)
+	li	t2, (KSTKGAP)
+	add	t2, t1, t2
+	// calculate the gap
+	mulw    t2,  t0, t2	
+	//
+	li 	t1, (KSTACKTOP)
+	sub	t1, t1, t2
+
+	csrw	sscratch, t1
 	
 	ld	t0, PT_T0(sp)
 	ld	t1, PT_T1(sp)
+	ld	t2, PT_T2(sp)
 	ld	sp, PT_SP(sp)
+	sfence.vma x0, x0
 	sret;

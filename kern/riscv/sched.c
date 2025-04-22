@@ -103,7 +103,7 @@ sched_halt(void)
 
 	// Mark that no environment is running on this CPU
 	curenv = NULL;
-	load_satp(PADDR(kern_pgdir));
+	load_satp_asid(PADDR(kern_pgdir), 0);
 
 	// Mark that this CPU is in the HALT state, so that when
 	// timer interupts come in, we know we should re-acquire the
@@ -113,6 +113,7 @@ sched_halt(void)
 	// Release the big kernel lock as if we were "leaving" the kernel
 	unlock_kernel();
 
+	while(1);
 	#if 0
 	// Reset stack pointer, enable interrupts and then halt.
 	asm volatile (

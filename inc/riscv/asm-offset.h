@@ -1,8 +1,8 @@
 #ifndef ASM_OFFSET_H
 #define ASM_OFFSET_H
 
-//#define PT_SIZE 288 /* sizeof(struct pt_regs) */
-#define PT_SIZE 280 /* sizeof(struct pt_regs) */
+#define PT_SIZE 288 /* sizeof(struct pt_regs) */
+//#define PT_SIZE 280 /* sizeof(struct pt_regs) */
 #define PT_SEPC 0 /* offsetof(struct pt_regs, sepc) */
 #define PT_RA 8 /* offsetof(struct pt_regs, ra) */
 #define PT_FP 64 /* offsetof(struct pt_regs, s0) */
@@ -39,7 +39,6 @@
 #define PT_SSTATUS 256 /* offsetof(struct pt_regs, sstatus) */
 #define PT_STVAL 264 /* offsetof(struct pt_regs, sbadaddr) */
 #define PT_SCAUSE 272 /* offsetof(struct pt_regs, scause) */
-
 #define PT_ORIG_A0 280 /* offsetof(struct pt_regs, orig_a0) */
 
 #endif

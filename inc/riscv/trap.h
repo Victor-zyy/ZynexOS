@@ -82,7 +82,7 @@ struct Trapframe {
         unsigned long stval;
         unsigned long scause;
         /* a0 value before the syscall */
-        // unsigned long orig_a0;
+        unsigned long orig_a0;
 }__attribute__((packed));
 
 #endif /* !__ASSEMBLER__ */

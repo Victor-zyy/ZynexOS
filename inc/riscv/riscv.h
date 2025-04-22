@@ -24,6 +24,27 @@ load_satp(uint64_t physical)
 	       );
 }
 
+static inline void
+load_satp_asid(uint64_t physical, uint16_t asid)
+{
+  uint64_t satp_ = 0;
+  uint64_t asid_mask = 0xf0000fffffffffff;
+  asm volatile("csrr %0,satp\n" \
+	       "and  %0, %0, %3\n" \
+	       "srli %0, %0, 44\n"\
+	       "slli %0, %0, 44\n"\
+	       "srli %1, %1, 12 \n" \
+	       "or %0, %0, %1\n" \
+	       "slli %2, %2, 44\n" \
+	       "or %0, %0, %2\n" \
+	       "sfence.vma\n" \
+	       "csrw satp, %0\n" \
+	       :
+	       : "r"(satp_) , "r"(physical), "r"(asid), "r"(asid_mask)
+	       : "cc", "memory"
+	       );
+}
+
 static inline uint64_t
 read_fp(void)
 {
