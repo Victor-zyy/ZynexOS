@@ -74,7 +74,7 @@ riscv_init(unsigned int hartid)
 	ENV_CREATE(TEST, ENV_TYPE_USER);
 #else
 	ENV_CREATE(user_dumbfork, ENV_TYPE_USER); /* FIXME: envid 0 */
-	//ENV_CREATE(user_yield, ENV_TYPE_USER); /* FIXME: envid 0 */
+	ENV_CREATE(user_yield, ENV_TYPE_USER); /* FIXME: envid 0 */
 	//ENV_CREATE(user_hello, ENV_TYPE_USER); /* FIXME: envid 0 */
 	//ENV_CREATE(user_yield, ENV_TYPE_USER); /* FIXME: envid 0 */
 #endif

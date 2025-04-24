@@ -104,14 +104,7 @@ env_init(void)
 void
 env_init_percpu(void)
 {
-
   set_status_sum(true);
-  #if 0
-  asm volatile("\t mv tp, %0\n"
-	       :
-	       :"r"(thiscpu)
-	       :"memory");
-  #endif
 }
 
 //

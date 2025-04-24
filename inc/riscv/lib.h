@@ -31,6 +31,9 @@ extern const volatile struct PageInfo pages[];
 // exit.c
 void	exit(void);
 
+// pgfault.c
+void    set_pgfault_handler(void (*handler)(struct UTrapframe *utf));
+
 // readline.c
 char*	readline(const char *buf);
 

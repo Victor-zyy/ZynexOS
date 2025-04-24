@@ -8,6 +8,8 @@ LIB_SRCFILES :=		lib/riscv/console.c \
 			lib/riscv/readline.c \
 			lib/riscv/syscall.c \
 			lib/riscv/exit.c \
+			lib/riscv/pfentry.S \
+			lib/riscv/pgfault.c \
 			lib/riscv/string.c 
 
 

@@ -41,4 +41,10 @@
 #define PT_SCAUSE 272 /* offsetof(struct pt_regs, scause) */
 #define PT_ORIG_A0 280 /* offsetof(struct pt_regs, orig_a0) */
 
+
+#define UTRAP_SIZE 280 /* sizeof(struct pt_regs) */
+#define UTRAP_VA 0
+#define UTRAP_CAUSE 256
+#define UTRAP_EPC 264
+#define UTRAP_SP 272
 #endif
