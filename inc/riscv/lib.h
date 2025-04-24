@@ -51,6 +51,20 @@ int	sys_page_unmap(envid_t env, void *pg);
 int	sys_ipc_try_send(envid_t to_env, uint32_t value, void *pg, int perm);
 int	sys_ipc_recv(void *rcv_pg);
 
+// This must be inlined.  Exercise for reader: why?
+// don't let the sys_exofork has stack pushes or pop etc.
+// always inline means ecall like insert instruction
+static inline envid_t __attribute__((always_inline))
+sys_exofork(void)
+{
+        register envid_t ret asm ("a0") = SYS_exofork;
+        asm volatile("ecall\n"
+                     : "+r" (ret)
+                     : "r" (ret));
+        return ret;
+}
+ 
+
 /* File open modes */
 #define	O_RDONLY	0x0000		/* open for reading only */
 #define	O_WRONLY	0x0001		/* open for writing only */

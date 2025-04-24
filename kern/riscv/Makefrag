@@ -51,9 +51,9 @@ KERN_BINFILES :=	user/riscv/hello \
 
 # Binary files for LAB4
 KERN_BINFILES +=	user/riscv/idle \
-			user/riscv/yield
-#			user/riscv/dumbfork \
-			user/riscv/stresssched \
+			user/riscv/yield \
+			user/riscv/dumbfork 
+#			user/riscv/stresssched \
 			user/riscv/faultdie \
 			user/riscv/faultregs \
 			user/riscv/faultalloc \

@@ -124,10 +124,10 @@
 #define USTACKTOP	0xfffffcfff0000000
 
 // Where user programs generally begin
-#define UTEXT		(2*PTSIZE)
+#define UTEXT		(4*PTSIZE)
 
 // Used for temporary page mappings.  Typed 'void*' for convenience
-#define UTEMP		((void*) PTSIZE)
+#define UTEMP		((void*) (2 * PTSIZE))
 // Used for temporary page mappings for the user page-fault handler
 // (should not conflict with other temporary page mappings)
 #define PFTEMP		(UTEMP + PTSIZE - PGSIZE)
