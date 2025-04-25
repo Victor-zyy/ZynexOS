@@ -54,14 +54,14 @@ KERN_BINFILES +=	user/riscv/idle \
 			user/riscv/yield \
 			user/riscv/dumbfork \
 			user/riscv/faultalloc \
+			user/riscv/faultallocbad \
+			user/riscv/forktree \
 			user/riscv/faultdie 
 #			user/riscv/stresssched \
 			user/riscv/faultregs \
-			user/riscv/faultallocbad \
 			user/riscv/faultnostack \
 			user/riscv/faultbadhandler \
 			user/riscv/faultevilhandler \
-			user/riscv/forktree \
 			user/riscv/sendpage \
 			user/riscv/spin \
 			user/riscv/fairness \
