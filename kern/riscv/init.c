@@ -133,6 +133,7 @@ mp_main(void)
 	cprintf("SMP: CPU %d starting\n", cpunum());
 
 	lapic_init();
+	clint_init();
 	env_init_percpu();
 	trap_init_percpu();
 	atomic_raw_xchg(&thiscpu->cpu_status, CPU_STARTED);

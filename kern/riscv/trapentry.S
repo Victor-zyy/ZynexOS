@@ -183,7 +183,9 @@ scratch_save_:
 	sub	t1, t1, t2
 
 	csrw	sscratch, t1
-	
+
+	ld	t0, PT_SSTATUS(sp)
+	csrw	sstatus, t0
 
 	ld	t0, PT_T0(sp)
 	ld	t1, PT_T1(sp)
