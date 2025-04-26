@@ -25,7 +25,7 @@
 
 #define TRAP_MASK    
 // Hardware IRQ numbers. We receive these as (IRQ_OFFSET+IRQ_WHATEVER)
-#define IRQ_TIMER        0
+#define IRQ_TIMER        5
 #define IRQ_KBD          1
 #define IRQ_SERIAL       4
 #define IRQ_SPURIOUS     7

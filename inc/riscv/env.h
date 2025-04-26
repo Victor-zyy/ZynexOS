@@ -32,7 +32,8 @@ typedef int32_t envid_t;
 //#define ENVX(envid)		((envid) & (NENV - 1))
 // env_id 0 as the init kernel thread which we didn't implement or so
 // TODO:
-#define ENVX(envid)		(((envid) & (NENV - 1)) - 1)
+//#define ENVX(envid)		(((envid) & (NENV - 1)) - 1)
+#define ENVX(envid)		(((envid) & (NENV - 1)))
 
 // Values of env_status in struct Env
 enum {

@@ -68,7 +68,7 @@ sys_env_destroy(envid_t envid)
 static void
 sys_yield(void)
 {
-	sched_yield();
+	sched_yield(0);
 }
 
 // Allocate a new environment.
@@ -96,6 +96,7 @@ sys_exofork(void)
 	env->env_tf = curenv->env_tf;	
 	env->env_tf.a0 = 0; 
 	env->env_tf.sepc += 4; 
+	env->env_tf.tp = (unsigned long)env;
 	// initialize the handler
 	env->env_pgfault_upcall = curenv->env_pgfault_upcall;
 	// LAB 4: Your code here.
@@ -209,6 +210,8 @@ sys_page_alloc(envid_t envid, void *va, int perm)
 	}
 
 	struct PageInfo *pginfo = page_alloc(ALLOC_ZERO);
+	if((uint64_t)va > (uint64_t)(USTACKTOP - PGSIZE))
+	  cprintf("pginfo phyaddr : 0x%08lx\n", page2pa(pginfo));
 	ret = page_insert(env->env_pgdir, pginfo, va, perm);
 	if(ret < 0){
 		page_free(pginfo);
@@ -434,7 +437,7 @@ sys_ipc_recv(void *dstva)
 	// block
 	if(curenv->env_ipc_recving){
 		curenv->env_status = ENV_NOT_RUNNABLE;
-		sched_yield();
+		sched_yield(0);
 	}
 	// LAB 4: Your code here.
 	// Step 1. do some necessary checks
@@ -450,7 +453,7 @@ sys_ipc_recv(void *dstva)
 	// Step 3. yield and record and check
 	curenv->env_ipc_recving = 1;
 	curenv->env_status = ENV_NOT_RUNNABLE;
-	sched_yield();
+	sched_yield(0);
 	//panic("sys_ipc_recv not implemented");
 	//
 }

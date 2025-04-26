@@ -14,6 +14,7 @@
 #include <inc/riscv/env.h>
 
 #include <kern/riscv/cpu.h>
+#include <kern/riscv/clint.h>
 #include <kern/riscv/spinlock.h>
 #include <kern/riscv/sched.h>
 
@@ -62,7 +63,9 @@ riscv_init(unsigned int hartid)
 	mp_init(hartid);
 	lapic_init();
 
+
 	// enable timer interrupts and etc.
+	clint_init();
 	// lock kernel
 	lock_kernel();
 
@@ -74,12 +77,12 @@ riscv_init(unsigned int hartid)
 	ENV_CREATE(TEST, ENV_TYPE_USER);
 #else
 	ENV_CREATE(user_dumbfork, ENV_TYPE_USER); /* FIXME: envid 0 */
-	ENV_CREATE(user_yield, ENV_TYPE_USER); /* FIXME: envid 0 */
+	//ENV_CREATE(user_yield, ENV_TYPE_USER); /* FIXME: envid 0 */
 	//ENV_CREATE(user_hello, ENV_TYPE_USER); /* FIXME: envid 0 */
 	//ENV_CREATE(user_yield, ENV_TYPE_USER); /* FIXME: envid 0 */
 #endif
 
-	sched_yield();
+	sched_yield(0);
 }
 
 // While boot_aps is booting a given CPU, it communicates the per-core
@@ -141,7 +144,7 @@ mp_main(void)
 	// Your code here:
 	lock_kernel();
 
-	sched_yield();
+	sched_yield(0);
 
 	// Remove this after you finish Exercise 6
 	// for (;;);

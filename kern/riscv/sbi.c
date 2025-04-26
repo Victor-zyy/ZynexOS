@@ -211,3 +211,15 @@ int sbi_cpunum(void)
 
 	return ret.value;
 }
+
+/**
+ * sbi_set_time() - set the mtimecmp regiser in m-mode  
+ *
+ * Returns the error
+ */
+int sbi_set_time(unsigned long time){
+	struct sbiret ret;
+	ret = sbi_ecall(SBI_EXT_0_1_SET_TIMER, 0, time, 0, 0, 0, 0, 0);
+	return ret.error;
+
+}

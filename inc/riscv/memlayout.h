@@ -118,7 +118,7 @@
 // Top of user-accessible VM
 #define UTOP		UENVS
 // Top of one-page user exception stack
-#define UXSTACKTOP	UTOP
+#define UXSTACKTOP	0xfffffbfff0000000
 // Next page left invalid to guard against exception stack overflow; then:
 // Top of normal user stack
 #define USTACKTOP	0xfffffcfff0000000

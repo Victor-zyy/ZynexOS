@@ -113,4 +113,6 @@ long sbi_mem_getsize(void);
 long sbi_hartcount(void);
 int sbi_boot_ap(unsigned long apid, unsigned long bootaddr, unsigned long nextmode);
 int sbi_cpunum(void);
+int sbi_set_time(unsigned long time);
+
 #endif

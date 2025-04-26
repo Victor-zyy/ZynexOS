@@ -30,4 +30,27 @@
 #define SIE_SSIE                (0x00000002)
 #define SIE_STIE                (0x00000020)
 #define SIE_SEIE                (0x00000200)
+
+#define IRQ_S_SOFT			1
+#define IRQ_VS_SOFT			2
+#define IRQ_M_SOFT			3
+#define IRQ_S_TIMER			5
+#define IRQ_VS_TIMER			6
+#define IRQ_M_TIMER			7
+#define IRQ_S_EXT			9
+#define IRQ_VS_EXT			10
+#define IRQ_M_EXT			11
+#define IRQ_S_GEXT			12
+
+#define MIP_SSIP			((1) << IRQ_S_SOFT)
+#define MIP_VSSIP			((1) << IRQ_VS_SOFT)
+#define MIP_MSIP			((1) << IRQ_M_SOFT)
+#define MIP_STIP			((1) << IRQ_S_TIMER)
+#define MIP_VSTIP			((1) << IRQ_VS_TIMER)
+#define MIP_MTIP			((1) << IRQ_M_TIMER)
+#define MIP_SEIP			((1) << IRQ_S_EXT)
+#define MIP_VSEIP			((1) << IRQ_VS_EXT)
+#define MIP_MEIP			((1) << IRQ_M_EXT)
+#define MIP_SGEIP			((1) << IRQ_S_GEXT)
+
 #endif

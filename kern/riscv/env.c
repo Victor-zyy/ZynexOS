@@ -201,7 +201,6 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 	if (generation <= 0)	// Don't create a negative env_id.
 		generation = 1 << ENVGENSHIFT;
 	e->env_id = generation | (e - envs);
-	e->env_id += 1;
 
 	// Set the basic status variables.
 	e->env_parent_id = parent_id;
@@ -224,7 +223,7 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 	// checks involving the RPL and the Descriptor Privilege Level
 	// (DPL) stored in the descriptors themselves.
 	e->env_tf.sp = USTACKTOP;
-	e->env_tf.status = read_status();
+	e->env_tf.status = read_status() | 0x20;
 	// You will set e->env_tf.tf_eip later.
 	// In order to handler the kernel stack, we use tp to pointed the env it self
 	// When the context is switched , then the tp is pointed another env of itself
@@ -507,7 +506,7 @@ env_destroy(struct Env *e)
 
         if (curenv == e) {
                 curenv = NULL;
-                sched_yield();
+                sched_yield(0);
         }
 }
 

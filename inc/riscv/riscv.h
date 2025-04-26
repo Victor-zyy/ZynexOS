@@ -3,6 +3,29 @@
 
 #include <inc/riscv/types.h>
 
+#ifdef __ASSEMBLY__
+#define __ASM_STR(x)	x
+#else
+#define __ASM_STR(x)	#x
+#endif
+
+#define csr_set(csr, val)                                          \
+	({                                                         \
+		unsigned long __v = (unsigned long)(val);          \
+		__asm__ __volatile__("csrs " __ASM_STR(csr) ", %0" \
+				     :                             \
+				     : "rK"(__v)                   \
+				     : "memory");                  \
+	})
+
+#define csr_clear(csr, val)                                        \
+	({                                                         \
+		unsigned long __v = (unsigned long)(val);          \
+		__asm__ __volatile__("csrc " __ASM_STR(csr) ", %0" \
+				     :                             \
+				     : "rK"(__v)                   \
+				     : "memory");                  \
+	})
 #define ASID_MASK(satp) ((satp >> 44) & 0x0ffff)
 #define ASID_PPN(satp) ((satp & 0x00000fffffffffff)
 #define ASID_PPN_MASK 0xfffff00000000000
@@ -147,4 +170,5 @@ inline void local_flush_tlb_page_asid(unsigned long addr,
                          : "r" (addr), "r" (asid)
                          : "memory");
 }
+
 #endif /* !_INC_RISCV_H */

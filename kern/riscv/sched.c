@@ -5,15 +5,17 @@
 #include <kern/riscv/pmap.h>
 #include <kern/riscv/monitor.h>
 #include <kern/riscv/cpu.h>
+#include <kern/riscv/clint.h>
 
 void sched_halt(void);
 
 // Choose a user environment to run and run it.
 void
-sched_yield(void)
+sched_yield(bool time)
 {
 	struct Env *idle;
 
+	//cprintf("sched_yield times %d next env_i ", time);
 	// Implement simple round-robin scheduling.
 	//
 	// Search through 'envs' for an ENV_RUNNABLE environment in
@@ -38,6 +40,7 @@ sched_yield(void)
 		if( i == NENV)// no RUNNABLE ENV sch
 			sched_halt();
 		idle = &envs[i];
+		//cprintf(" %d sepc 0x%08x\n", i, idle->env_tf.sepc);
 		env_run(idle);
 	}
 
@@ -61,18 +64,21 @@ sched_yield(void)
 			// not found one
 			if(run == ENV_RUNNING){
 				idle = &envs[curid];
+				//cprintf(" %d sepc 0x%08x\n", i, idle->env_tf.sepc);
 				env_run(idle);
 			}
 		}else{
 			//found one
 			//
 			idle = &envs[i];
+			//cprintf(" %d sepc 0x%08x\n", i, idle->env_tf.sepc);
 			env_run(idle);
 		}
 		sched_halt();
 	}else{
 		//find one do dome change
 		idle = &envs[i];
+		//cprintf(" %d sepc 0x%08x\n", i, idle->env_tf.sepc);
 		env_run(idle);
 	}
 	// sched_halt never returns
@@ -113,20 +119,22 @@ sched_halt(void)
 	// Release the big kernel lock as if we were "leaving" the kernel
 	unlock_kernel();
 
-	while(1);
-	#if 0
+	//while(1);
+
 	// Reset stack pointer, enable interrupts and then halt.
 	asm volatile (
-		"movl $0, %%ebp\n"
-		"movl %0, %%esp\n"
-		"pushl $0\n"
-		"pushl $0\n"
+		"mv fp, zero\n"		
+		"mv sp, %0\n" \
 		// Uncomment the following line after completing exercise 13
-		"sti\n"
-		"1:\n"
-		"hlt\n"
-		"jmp 1b\n"
-	: : "a" (thiscpu->cpu_ts.ts_esp0));
-	#endif
+		"csrw  sscratch, zero\n"\
+		"csrr  t0, sstatus\n"\
+		"or    t0, t0, 0x2\n"
+		"csrw  sstatus, t0\n"\
+		"li    t0, 0x20\n"\
+		"csrw  sie, t0\n" \
+		"1:\n" \
+		"nop\n" \
+		"j 1b\n" \
+	: : "r" (thiscpu->kern_sp));
 }
 

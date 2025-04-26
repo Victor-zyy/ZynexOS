@@ -32,6 +32,7 @@ KERN_SRCFILES :=	kern/riscv/entry.S \
 			kern/riscv/lapic.c \
 			kern/riscv/spinlock.c \
 			kern/riscv/sched.c \
+			kern/riscv/clint.c \
 			kern/riscv/mpconfig.c 
 
 # Binary program images to embed within the kernel.
@@ -56,9 +57,10 @@ KERN_BINFILES +=	user/riscv/idle \
 			user/riscv/faultalloc \
 			user/riscv/faultallocbad \
 			user/riscv/forktree \
-			user/riscv/faultdie 
-#			user/riscv/stresssched \
-			user/riscv/faultregs \
+			user/riscv/faultdie \
+			user/riscv/forktest \
+			user/riscv/stresssched 
+#			user/riscv/faultregs \
 			user/riscv/faultnostack \
 			user/riscv/faultbadhandler \
 			user/riscv/faultevilhandler \

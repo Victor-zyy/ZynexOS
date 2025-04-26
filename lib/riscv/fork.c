@@ -15,6 +15,7 @@ static void
 pgfault(struct UTrapframe *utf)
 {
 	void *addr = (void *) utf->utf_fault_va;
+	//cprintf("envid 0x%x pgfault cause = 0x%x epc = 0x%08x va : 0x%08lx\n", sys_getenvid(), utf->utf_cause, utf->utf_epc, addr);
 	int r;
 
 	// Check that the faulting access was (1) a write, and (2) to a
@@ -63,7 +64,7 @@ duppage(envid_t envid, uint64_t pn)
 	int r;
 	// LAB 4: Your code here.
 	// Step 1. map the page copy-on-write
-	r = sys_page_map(sys_getenvid(), (void *)(pn * PGSIZE), envid, (void *)(pn * PGSIZE), PTE_COW | PTE_U | PTE_R | PTE_X);
+	r = sys_page_map(sys_getenvid(), (void *)(pn * PGSIZE), envid, (void *)(pn * PGSIZE), PTE_COW | PTE_U | PTE_R | PTE_X | PTE_V);
 	if( r < 0 ){
 		panic("sys_page_map: %e", r);
 	}
@@ -71,7 +72,7 @@ duppage(envid_t envid, uint64_t pn)
 	// how to remap
 	// cprintf("pn * PGSIZE = 0x%08x\n", pn * PGSIZE);
 
-	r = sys_page_map(sys_getenvid(), (void *)(pn * PGSIZE), sys_getenvid(), (void *)(pn * PGSIZE), PTE_COW | PTE_U | PTE_R | PTE_X);
+	r = sys_page_map(sys_getenvid(), (void *)(pn * PGSIZE), sys_getenvid(), (void *)(pn * PGSIZE), PTE_COW | PTE_U | PTE_R | PTE_X | PTE_V);
 
 	if( r < 0 ){
 		panic("sys_page_map: %e", r);
@@ -112,6 +113,7 @@ fork(void)
 
 	// Step 2. call sys_exofork to create a child environment
 	envid_t envid = sys_exofork();
+	//cprintf("sys_getenvid : 0x%x  envid : 0x%x \n", sys_getenvid(), envid);
 	if(envid < 0)
 		panic("sys_exofork: %e", envid);
 	if(envid == 0){
@@ -131,13 +133,14 @@ fork(void)
 	j = (USTACKTOP-PGSIZE) / PGSIZE;
 	duppage(envid, j);
 	// Step 4. allocate a new page for child exception stack
-	if((r = sys_page_alloc(envid, (void *)(UXSTACKTOP - PGSIZE), PTE_W | PTE_U | PTE_R)) < 0)
+	if((r = sys_page_alloc(envid, (void *)(UXSTACKTOP - PGSIZE), PTE_W | PTE_U | PTE_R | PTE_V)) < 0)
 		panic("sys_page_alloc: %e", r);
+
+	//cprintf("fork ok\n");
 	// Step 5. start the child environment running
 	if((r = sys_env_set_status(envid, ENV_RUNNABLE)) < 0)
 		panic("sys_env_set_status: %e", r);	
 
-	// cprintf("fork ok\n");
 	return envid;
 }
 

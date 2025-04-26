@@ -12,6 +12,7 @@
 #include <kern/riscv/cpu.h>
 #include <kern/riscv/sched.h>
 #include <kern/riscv/spinlock.h>
+#include <kern/riscv/clint.h>
 
 
 /* For debugging, so print_trapframe can distinguish between printing
@@ -75,9 +76,9 @@ void
 print_trapframe(struct Trapframe *tf)
 {
 
-	cprintf("TRAP frame at %p\n", tf);
+        cprintf("TRAP frame at %p Base envs : 0x%08lx\n", tf, envs);
+	print_regs(tf);
 	#if 0
-	print_regs(&tf->tf_regs);
 	cprintf("  es   0x----%04x\n", tf->tf_es);
 	cprintf("  ds   0x----%04x\n", tf->tf_ds);
 	cprintf("  trap 0x%08x %s\n", tf->tf_trapno, trapname(tf->tf_trapno));
@@ -108,18 +109,46 @@ print_trapframe(struct Trapframe *tf)
 }
 
 void
-print_regs(struct PushRegs *regs)
+print_regs(struct Trapframe *regs)
 {
-  #if 0
-	cprintf("  edi  0x%08x\n", regs->reg_edi);
-	cprintf("  esi  0x%08x\n", regs->reg_esi);
-	cprintf("  ebp  0x%08x\n", regs->reg_ebp);
-	cprintf("  oesp 0x%08x\n", regs->reg_oesp);
-	cprintf("  ebx  0x%08x\n", regs->reg_ebx);
-	cprintf("  edx  0x%08x\n", regs->reg_edx);
-	cprintf("  ecx  0x%08x\n", regs->reg_ecx);
-	cprintf("  eax  0x%08x\n", regs->reg_eax);
-  #endif 
+	cprintf("  sepc      0x%08lx\n", regs->sepc);
+	cprintf("  ra        0x%08lx\n", regs->ra);
+	cprintf("  sp        0x%08lx\n", regs->sp);
+	cprintf("  gp        0x%08lx\n", regs->gp);
+	// parse the thread pointer
+	cprintf("  tp        0x%08lx\n", regs->tp);
+	cprintf("  env_n     0x%08lx\n", (struct Env*)regs->tp - envs);
+	cprintf("  t0        0x%08lx\n", regs->t0);
+	cprintf("  t1        0x%08lx\n", regs->t1);
+	cprintf("  t2        0x%08lx\n", regs->t2);
+	cprintf("  s0        0x%08lx\n", regs->s0);
+	cprintf("  s1        0x%08lx\n", regs->s1);
+	cprintf("  a0        0x%08lx\n", regs->a0);
+	cprintf("  a1        0x%08lx\n", regs->a1);
+	cprintf("  a2        0x%08lx\n", regs->a2);
+	cprintf("  a3        0x%08lx\n", regs->a3);
+	cprintf("  a4        0x%08lx\n", regs->a4);
+	cprintf("  a5        0x%08lx\n", regs->a5);
+	cprintf("  a6        0x%08lx\n", regs->a6);
+	cprintf("  a7        0x%08lx\n", regs->a7);
+	cprintf("  s2        0x%08lx\n", regs->s2);
+	cprintf("  s3        0x%08lx\n", regs->s3);
+	cprintf("  s4        0x%08lx\n", regs->s4);
+	cprintf("  s5        0x%08lx\n", regs->s5);
+	cprintf("  s6        0x%08lx\n", regs->s6);
+	cprintf("  s7        0x%08lx\n", regs->s7);
+	cprintf("  s8        0x%08lx\n", regs->s8);
+	cprintf("  s9        0x%08lx\n", regs->s9);
+	cprintf("  s10       0x%08lx\n", regs->s10);
+	cprintf("  s11       0x%08lx\n", regs->s11);
+	cprintf("  t3        0x%08lx\n", regs->t3);
+	cprintf("  t4        0x%08lx\n", regs->t4);
+	cprintf("  t5        0x%08lx\n", regs->t5);
+	cprintf("  t6        0x%08lx\n", regs->t6);
+	cprintf("  status    0x%08lx\n", regs->status);
+	cprintf("  stval     0x%08lx\n", regs->stval);
+	cprintf("  scause    0x%08lx\n", regs->scause);
+	cprintf("  orig_a0   0x%08lx\n", regs->orig_a0);
 }
 
 static void
@@ -130,8 +159,17 @@ trap_dispatch(struct Trapframe *tf)
   if (tf->scause & (1UL << (__riscv_xlen - 1))) {
 	    tf->scause &= ~(1UL << (__riscv_xlen - 1));
 	    switch(tf->scause){
+	    case IRQ_TIMER: 
+	      //cprintf("tf->orig_a0 : 0x%08lx\n", tf->orig_a0);
+	      tf->orig_a0 = 0;
+	      csr_clear(CSR_SIE, MIP_STIP);
+	      // reset the mtimecmp register
+	      reset_timer();/* FIXME:  interrupt nested */
+	      // sched
+	      sched_yield(1);
 	    default:
-		break;
+	      cprintf("unhandle interrupt : 0x%x\n", tf->scause);
+	      break;
 	    }
 	    return;
     }
@@ -205,7 +243,7 @@ trap(struct Trapframe *tf)
                 if (curenv->env_status == ENV_DYING) {
                         env_free(curenv);
                         curenv = NULL;
-                        sched_yield();
+                        sched_yield(0);
                 }
 
 		// Copy trap frame (which is currently on the stack)
@@ -229,7 +267,7 @@ trap(struct Trapframe *tf)
        if (curenv && curenv->env_status == ENV_RUNNING)
                env_run(curenv);
        else
-               sched_yield();
+               sched_yield(0);
 
 }
 
@@ -239,7 +277,7 @@ page_fault_handler(struct Trapframe *tf)
 {
 	uint64_t fault_va;
 
-	// Read processor's CR2 register to find the faulting address
+	// Read processor's stval register to find the faulting address
 	fault_va = tf->stval;
 
 	// Handle kernel-mode page faults.
@@ -340,7 +378,7 @@ page_fault_handler(struct Trapframe *tf)
 	// push esp as an argument
 	uintptr_t entry = (uintptr_t)curenv->env_pgfault_upcall;
 
-	user_mem_assert(curenv, (void *)entry, 4, PTE_W | PTE_X | PTE_R);
+	user_mem_assert(curenv, (void *)entry, 4, PTE_U | PTE_W | PTE_X | PTE_R);
 
 	curenv->env_tf.sp = (uintptr_t)sp;
 	curenv->env_tf.sepc= entry;
