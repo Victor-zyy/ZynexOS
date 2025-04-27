@@ -54,8 +54,8 @@ int	sys_page_alloc(envid_t env, void *pg, int perm);
 int	sys_page_map(envid_t src_env, void *src_pg,
 		     envid_t dst_env, void *dst_pg, int perm);
 int	sys_page_unmap(envid_t env, void *pg);
-int	sys_ipc_try_send(envid_t to_env, uint32_t value, void *pg, int perm);
-int	sys_ipc_recv(void *rcv_pg);
+int	sys_ipc_try_send(envid_t to_env, uint64_t value, void *pg, int perm);
+int64_t	sys_ipc_recv(void *rcv_pg);
 
 // This must be inlined.  Exercise for reader: why?
 // don't let the sys_exofork has stack pushes or pop etc.
@@ -69,7 +69,11 @@ sys_exofork(void)
                      : "r" (ret));
         return ret;
 }
- 
+// ipc.c
+void    ipc_send(envid_t to_env, uint64_t value, void *pg, int perm);
+int64_t ipc_recv(envid_t *from_env_store, void *pg, int *perm_store);
+envid_t ipc_find_env(enum EnvType type);
+
 
 /* File open modes */
 #define	O_RDONLY	0x0000		/* open for reading only */

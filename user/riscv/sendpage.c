@@ -1,7 +1,7 @@
 // Test Conversation between parent and child environment
 // Contributed by Varun Agrawal at Stony Brook
 
-#include <inc/lib.h>
+#include <inc/riscv/lib.h>
 
 const char *str1 = "hello child environment! how are you?";
 const char *str2 = "hello parent environment! I'm good.";
@@ -22,14 +22,14 @@ umain(int argc, char **argv)
 			cprintf("child received correct message\n");
 
 		memcpy(TEMP_ADDR_CHILD, str2, strlen(str2) + 1);
-		ipc_send(who, 0, TEMP_ADDR_CHILD, PTE_P | PTE_W | PTE_U);
+		ipc_send(who, 0, TEMP_ADDR_CHILD, PTE_V | PTE_W | PTE_U | PTE_R);
 		return;
 	}
 
 	// Parent
-	sys_page_alloc(thisenv->env_id, TEMP_ADDR, PTE_P | PTE_W | PTE_U);
+	sys_page_alloc(thisenv->env_id, TEMP_ADDR, PTE_V | PTE_W | PTE_U | PTE_R);
 	memcpy(TEMP_ADDR, str1, strlen(str1) + 1);
-	ipc_send(who, 0, TEMP_ADDR, PTE_P | PTE_W | PTE_U);
+	ipc_send(who, 0, TEMP_ADDR, PTE_V | PTE_W | PTE_U | PTE_R);
 
 	ipc_recv(&who, TEMP_ADDR, 0);
 	cprintf("%x got message: %s\n", who, TEMP_ADDR);

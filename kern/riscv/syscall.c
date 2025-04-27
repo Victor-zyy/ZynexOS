@@ -352,7 +352,7 @@ sys_page_unmap(envid_t envid, void *va)
 //	-E_NO_MEM if there's not enough memory to map srcva in envid's
 //		address space.
 static int
-sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
+sys_ipc_try_send(envid_t envid, uint64_t value, void *srcva, unsigned perm)
 {
 	// LAB 4: Your code here.
 	// Step 1. get the env of the envid receiver and do some necessary check
@@ -370,7 +370,7 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
 		//cprintf("env->env_id : %x env_status : %d\n", env->env_id, env->env_status);
 		return -E_IPC_NOT_RECV;
 	}
-
+	
 	if(((uint64_t)srcva < UTOP) && ((uint64_t)srcva % PGSIZE != 0)){
 
 	}
@@ -408,6 +408,7 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
 	env->env_ipc_perm = p_flag ? perm : 0;
 	// Step 4. reset the target is runnable again
 	env->env_tf.a0 = 0; // return from systemccall
+	env->env_tf.sepc += 4; // return from sepc + 4 next instruction of ecall
 	env->env_status = ENV_RUNNABLE;
 
 	p_flag = 0; // for reuse
@@ -447,7 +448,6 @@ sys_ipc_recv(void *dstva)
 		}
 		curenv->env_ipc_dstva = dstva;
 	}
-
 	// mark you wanna to recv data
 	// Step 2. mark self not runnable
 	// Step 3. yield and record and check

@@ -3,10 +3,10 @@
 #include <inc/riscv/syscall.h>
 #include <inc/riscv/lib.h>
 
-static inline int32_t
+static inline int64_t
 syscall(int num, int check, uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4, uint64_t a5)
 {
-        register uint64_t ret asm("a0");
+        register int64_t ret asm("a0");
 
 	// Generic system call: pass system call number in AX,
 	// up to five parameters in DX, CX, BX, DI, SI.
@@ -100,12 +100,12 @@ sys_env_set_pgfault_upcall(envid_t envid, void *upcall)
 }
 
 int
-sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, int perm)
+sys_ipc_try_send(envid_t envid, uint64_t value, void *srcva, int perm)
 {
 	return syscall(SYS_ipc_try_send, 0, envid, value, (uint64_t) srcva, perm, 0);
 }
 
-int
+int64_t
 sys_ipc_recv(void *dstva)
 {
 	return syscall(SYS_ipc_recv, 1, (uint64_t)dstva, 0, 0, 0, 0);

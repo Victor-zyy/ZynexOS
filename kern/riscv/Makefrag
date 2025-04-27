@@ -51,6 +51,7 @@ KERN_BINFILES :=	user/riscv/hello \
 			user/riscv/evilhello 
 
 # Binary files for LAB4
+#user/riscv/pingpongs need to implentment sfork
 KERN_BINFILES +=	user/riscv/idle \
 			user/riscv/yield \
 			user/riscv/dumbfork \
@@ -59,17 +60,15 @@ KERN_BINFILES +=	user/riscv/idle \
 			user/riscv/forktree \
 			user/riscv/faultdie \
 			user/riscv/forktest \
-			user/riscv/stresssched 
-#			user/riscv/faultregs \
+			user/riscv/pingpong \
+			user/riscv/primes \
 			user/riscv/faultnostack \
 			user/riscv/faultbadhandler \
 			user/riscv/faultevilhandler \
 			user/riscv/sendpage \
 			user/riscv/spin \
 			user/riscv/fairness \
-			user/riscv/pingpong \
-			user/riscv/pingpongs \
-			user/riscv/primes
+			user/riscv/stresssched 
 # Only build files if they exist.
 KERN_SRCFILES := $(wildcard $(KERN_SRCFILES))
 
