@@ -15,6 +15,7 @@ KERN_LDFLAGS := $(LDFLAGS) -T kern/riscv/kernel.ld -nostdlib
 # from the lib directory, to avoid gratuitous code duplication.
 KERN_SRCFILES :=	kern/riscv/entry.S \
 			kern/riscv/entrypgdir.c \
+			kern/riscv/test_main.c \
 			kern/riscv/init.c \
 			kern/riscv/console.c \
 			kern/riscv/monitor.c \
@@ -69,6 +70,21 @@ KERN_BINFILES +=	user/riscv/idle \
 			user/riscv/spin \
 			user/riscv/fairness \
 			user/riscv/stresssched 
+
+# Binary files for LAB5
+KERN_BINFILES +=  	user/testfile \
+			user/spawnhello \
+			user/icode 
+
+# Binary files for LAB5
+KERN_BINFILES +=	user/testpteshare \
+			user/testfdsharing \
+			user/testpipe \
+			user/testpiperace \
+			user/testpiperace2 \
+			user/primespipe \
+			user/testshell
+
 # Only build files if they exist.
 KERN_SRCFILES := $(wildcard $(KERN_SRCFILES))
 
@@ -102,20 +118,21 @@ $(OBJDIR)/kern/init.o: override KERN_CFLAGS+=$(INIT_CFLAGS)
 $(OBJDIR)/kern/init.o: $(OBJDIR)/.vars.INIT_CFLAGS
 
 # How to build the kernel itself
-$(OBJDIR)/kern/kernel: $(KERN_OBJFILES) $(KERN_BINFILES) kern/riscv/kernel.ld \
+$(OBJDIR)/kern/kernel: $(KERN_OBJFILES) $(KERN_BINFILES) $(OBJDIR)/fs/fs kern/riscv/kernel.ld \
 	  $(OBJDIR)/.vars.KERN_LDFLAGS
 	@echo + ld $@
-	$(V)$(LD) -o $@ $(KERN_LDFLAGS) $(KERN_OBJFILES) $(GCC_LIB) -b elf64-littleriscv $(foreach fo, $(KERN_BINFILES), $(addsuffix _,$(fo)))
+	$(V)$(LD) -o $@ $(KERN_LDFLAGS) $(KERN_OBJFILES) $(GCC_LIB) -b elf64-littleriscv $(OBJDIR)/fs/fs_ $(foreach fo, $(KERN_BINFILES), $(addsuffix _,$(fo))) 
 	$(V)$(OBJDUMP) -S $@ > $@.asm
 	$(V)$(NM) -n $@ > $@.sym
 
 # How to build the kernel disk image
-$(OBJDIR)/kern/kernel.img: $(OBJDIR)/kern/kernel $(OBJDIR)/boot/boot
+$(OBJDIR)/kern/kernel.img: $(OBJDIR)/kern/kernel $(OBJDIR)/boot/boot $(OBJDIR)/fs/fs.img
 	@echo + mk $@
 	$(V)dd bs=1k count=32k if=/dev/zero of=$(OBJDIR)/kern/kernel.img~ 2>/dev/null
 	$(V)dd bs=1k seek=0   conv=notrunc if=$(OBJDIR)/boot/boot of=$(OBJDIR)/kern/kernel.img~ 2>/dev/null
 	$(V)dd bs=1k seek=512 conv=notrunc if=$(TOP)/opensbi/fw_jump.bin of=$(OBJDIR)/kern/kernel.img~ 2>/dev/null
-	$(V)dd bs=1k seek=1k if=$(OBJDIR)/kern/kernel of=$(OBJDIR)/kern/kernel.img~ conv=notrunc 2>/dev/null
+	$(V)dd bs=1k seek=1k if=$(OBJDIR)/kern/kernel of=$(OBJDIR)/kern/kernel.img~ conv=notrunc 2>/dev/null #FIXME: 7M
+	$(V)dd bs=1k seek=8k if=$(OBJDIR)/fs/fs.img of=$(OBJDIR)/kern/kernel.img~ conv=notrunc 2>/dev/null
 	$(V)mv $(OBJDIR)/kern/kernel.img~ $(OBJDIR)/kern/kernel.img
 
 all: $(OBJDIR)/kern/kernel.img

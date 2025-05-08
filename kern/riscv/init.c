@@ -35,6 +35,7 @@ void
 riscv_init(unsigned int hartid)
 {
 
+
 	extern char edata[], end[];
 
 	// Before doing anything else, complete the ELF loading process.
@@ -72,14 +73,18 @@ riscv_init(unsigned int hartid)
 	// After lock the kernel, now we strap the aps
 	boot_aps();
 
+        // Start fs.
+        ENV_CREATE(fs_fs, ENV_TYPE_FS);
+
 #if defined (TEST)
 	// Don't touch !
 	ENV_CREATE(TEST, ENV_TYPE_USER);
 #else
-	ENV_CREATE(user_dumbfork, ENV_TYPE_USER); /* FIXME: envid 0 */
+	//ENV_CREATE(user_dumbfork, ENV_TYPE_USER); /* FIXME: envid 0 */
 	//ENV_CREATE(user_yield, ENV_TYPE_USER); /* FIXME: envid 0 */
 	//ENV_CREATE(user_hello, ENV_TYPE_USER); /* FIXME: envid 0 */
 	//ENV_CREATE(user_yield, ENV_TYPE_USER); /* FIXME: envid 0 */
+	ENV_CREATE(user_spawnhello, ENV_TYPE_USER); 
 #endif
 
 	sched_yield(0);

@@ -5,8 +5,8 @@
 #ifndef JOS_INC_FD_H
 #define JOS_INC_FD_H
 
-#include <inc/types.h>
-#include <inc/fs.h>
+#include <inc/riscv/types.h>
+#include <inc/riscv/fs.h>
 
 struct Fd;
 struct Stat;
@@ -27,10 +27,6 @@ struct FdFile {
 	int id;
 };
 
-struct FdSock {
-	int sockid;
-};
-
 struct Fd {
 	int fd_dev_id;
 	off_t fd_offset;
@@ -38,8 +34,6 @@ struct Fd {
 	union {
 		// File server files
 		struct FdFile fd_file;
-		// Network sockets
-		struct FdSock fd_sock;
 	};
 };
 
@@ -58,7 +52,6 @@ int	fd_lookup(int fdnum, struct Fd **fd_store);
 int	dev_lookup(int devid, struct Dev **dev_store);
 
 extern struct Dev devfile;
-extern struct Dev devsock;
 extern struct Dev devcons;
 extern struct Dev devpipe;
 

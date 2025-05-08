@@ -3,8 +3,8 @@
 #ifndef JOS_INC_FS_H
 #define JOS_INC_FS_H
 
-#include <inc/types.h>
-#include <inc/mmu.h>
+#include <inc/riscv/types.h>
+#include <inc/riscv/mmu.h>
 
 // File nodes (both in-memory and on-disk)
 
@@ -28,7 +28,7 @@
 
 struct File {
 	char f_name[MAXNAMELEN];	// filename
-	off_t f_size;			// file size in bytes
+	off_t f_size;			// file size in bytes /* FIXME: 8 bytes */
 	uint32_t f_type;		// file type
 
 	// Block pointers.
@@ -38,8 +38,8 @@ struct File {
 
 	// Pad out to 256 bytes; must do arithmetic in case we're compiling
 	// fsformat on a 64-bit machine.
-	uint8_t f_pad[256 - MAXNAMELEN - 8 - 4*NDIRECT - 4];
-} __attribute__((packed));	// required only on some 64-bit machines
+	uint8_t f_pad[256 - MAXNAMELEN - 8 - 4 - 4*NDIRECT - 4];
+} __attribute__((packed, aligned(8)));	// required only on some 64-bit machines
 
 // An inode block contains exactly BLKFILES 'struct File's
 #define BLKFILES	(BLKSIZE / sizeof(struct File))
@@ -93,7 +93,7 @@ union Fsipc {
 		int req_fileid;
 		size_t req_n;
 		char req_buf[PGSIZE - (sizeof(int) + sizeof(size_t))];
-	} write;
+	} __attribute__((packed))write;
 	struct Fsreq_stat {
 		int req_fileid;
 	} stat;

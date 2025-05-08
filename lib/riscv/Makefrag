@@ -4,6 +4,7 @@ LIB_SRCFILES :=		lib/riscv/console.c \
 			lib/riscv/libmain.c \
 			lib/riscv/panic.c \
 			lib/riscv/printf.c \
+			lib/riscv/fprintf.c \
 			lib/riscv/printfmt.c \
 			lib/riscv/readline.c \
 			lib/riscv/syscall.c \
@@ -12,6 +13,13 @@ LIB_SRCFILES :=		lib/riscv/console.c \
 			lib/riscv/pgfault.c \
 			lib/riscv/fork.c \
 			lib/riscv/ipc.c \
+			lib/riscv/file.c \
+			lib/riscv/fd.c \
+			lib/riscv/pipe.c \
+			lib/riscv/pageref.c \
+			lib/riscv/spawn.c \
+			lib/riscv/wait.c \
+			lib/riscv/args.c \
 			lib/riscv/string.c 
 
 

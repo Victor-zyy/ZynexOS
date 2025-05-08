@@ -74,6 +74,7 @@ bootmain(unsigned int hartid, void *fdt)
 	}
 	// set the _boot_status in boot.S to indicate now it can jump to opensbi firmware
 	atomic_add(1, (unsigned long*)_boot_status);
+
 	//atomic_add(1, (unsigned long*)0x8000);
 	// call the entry point from the ELF header
 	// note: does not return!

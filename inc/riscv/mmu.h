@@ -28,8 +28,10 @@
 
 // page number field of address
 #define PHYMASK         0x000000007fffffff
+#define VADDRMASK       0x0000ffffffffffff
 // 0x801ff000
-#define PGNUM(la)	(((uintptr_t) (la & PHYMASK)) >> PTXSHIFT)
+#define PGNUM(la)	(((uintptr_t) ((uintptr_t)la & (uintptr_t)PHYMASK)) >> PTXSHIFT)
+#define TPGNUM(la)	(((uintptr_t) ((uintptr_t)la & (uintptr_t)VADDRMASK)) >> PTXSHIFT)
 
 // page directory index
 #define PD0X(la)		((((uintptr_t) (la)) >> PDX0SHIFT) & 0x1FF)
@@ -71,16 +73,16 @@
 #define PTE_G		0x020	// Global
 #define PTE_A		0x040	// Accessed
 #define PTE_D		0x080	// Dirty
-#define PTE_IO          0x400000000000000    // IO cache disable strong memory-consistence
-#define PTE_MEM         0x200000000000000    // normal memeory cache disable thin memory-consistence
+#define PTE_IO          0x4000000000000000    // IO cache disable strong memory-consistence
+#define PTE_MEM         0x2000000000000000    // normal memeory cache disable thin memory-consistence
 #define PTE_N           0x8000000000000000 // Sequential entry
 
 // The PTE_AVAIL bits aren't used by the kernel or interpreted by the
 // hardware, so user processes are allowed to set them arbitrarily.
-// #define PTE_AVAIL	0xE00	// Available for software use
+#define PTE_AVAIL	0x300	// Available for software use
 
 // Flags in PTE_SYSCALL may be used in system calls.  (Others may not.)
-#define PTE_SYSCALL	(PTE_X |PTE_V | PTE_W | PTE_R |  PTE_U)
+#define PTE_SYSCALL	(PTE_AVAIL | PTE_X |PTE_V | PTE_W | PTE_R |  PTE_U)
 
 // Address in page table or page directory entry
 #define PTE_ADDR(pte)	PTE_PHY(((physaddr_t) (pte) & ~0xff800000000003FF))

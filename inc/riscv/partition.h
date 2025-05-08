@@ -1,6 +1,6 @@
 #ifndef JOS_INC_PARTITION_H
 #define JOS_INC_PARTITION_H
-#include <inc/types.h>
+#include <inc/riscv/types.h>
 
 /*
  * This file contains definitions for x86 partition tables, and comes from

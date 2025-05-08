@@ -167,7 +167,7 @@ env_setup_vm(struct Env *e)
 	// except for above we don't set env page
 	// UVPT maps the env's own page table read-only.
 	// Permissions: kernel R, user R
-	// e->env_pgdir[PDX(UVPT)] = PADDR(e->env_pgdir) | PTE_P | PTE_U;
+	e->env_pgdir[PD0X(UVPT)] = PADDR(e->env_pgdir) | PTE_V;
 	/* FIXME:  */
 
 	return 0;
@@ -334,7 +334,7 @@ load_icode(struct Env *e, uint8_t *binary)
 
 	// check for magic number
 	if(elf_header->e_magic != ELF_MAGIC)
-			goto bad;
+	    goto bad;
 	// load each program segment (ignores ph flags)
 	ph = (struct Proghdr *)((uint8_t *)elf_header + elf_header->e_phoff);
 	eph = ph + elf_header->e_phnum;
@@ -396,6 +396,10 @@ env_create(uint8_t *binary, enum EnvType type)
 	load_icode(env, binary);
 	// 3.set its env_type
 	env->env_type = type;
+
+	if(type == ENV_TYPE_FS){
+	  env->env_pgdir[PD0X(FLASH_MAP_ADDR)] = kern_pgdir[PD0X(FLASH_MAP_ADDR)];
+	}
 }
 
 //

@@ -179,7 +179,7 @@ include boot/arch/$(ARCH)/Makefrag
 include kern/$(ARCH)/Makefrag
 include lib/$(ARCH)/Makefrag
 include user/$(ARCH)/Makefrag
-#include fs/Makefrag
+include fs/Makefrag
 #include net/Makefrag
 
 

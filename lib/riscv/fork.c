@@ -62,6 +62,15 @@ static int
 duppage(envid_t envid, uint64_t pn)
 {
 	int r;
+	int pte;
+	// fork when the pte entry is PTE_SHATE attribute then just mapping the PTE_SHARE mapping
+	if((pte = sys_uvpt_pte((void *)(pn * PGSIZE))) & PTE_SHARE){
+	  int perm = pte & PTE_SYSCALL;
+	  r = sys_page_map(sys_getenvid(), (void *)(pn * PGSIZE), envid, (void *)(pn * PGSIZE), PTE_SHARE | perm | PTE_V);
+	  if( r < 0 ){
+	    panic("sys_page_map: %e", r);
+	  }
+	}
 	// LAB 4: Your code here.
 	// Step 1. map the page copy-on-write
 	r = sys_page_map(sys_getenvid(), (void *)(pn * PGSIZE), envid, (void *)(pn * PGSIZE), PTE_COW | PTE_U | PTE_R | PTE_X | PTE_V);

@@ -12,10 +12,14 @@ enum {
 	SYS_page_unmap,
 	SYS_exofork,
 	SYS_env_set_status,
+	SYS_env_set_trapframe,
+	SYS_yield,/* FIXME:  */
 	SYS_env_set_pgfault_upcall,
-	SYS_yield,
 	SYS_ipc_try_send,
 	SYS_ipc_recv,
+	SYS_page_clear_dirty,
+	SYS_uvpt_pte,
+	SYS_copy_shared_pages,
 	NSYSCALLS
 };
 

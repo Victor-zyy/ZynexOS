@@ -37,7 +37,8 @@ typedef uint64_t size_t;
 typedef int64_t ssize_t;
 
 // off_t is used for file offsets and lengths.
-typedef int64_t off_t;
+// typedef int64_t off_t;
+typedef int32_t off_t; // in case of compability
 
 // Efficient min and max operations
 #define MIN(_a, _b)						\

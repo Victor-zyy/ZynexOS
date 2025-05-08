@@ -8,10 +8,13 @@
 	.set envs, UENVS
 	.globl pages
 	.set pages, UPAGES
+	// we do not use the uvpt in user-mode 
+	/*
 	.globl uvpt
 	.set uvpt, UVPT
 	.globl uvpd
 	.set uvpd, (UVPT+(UVPT>>12)*4)
+	*/
 
 
 // Entrypoint - this is where the kernel (or our parent environment)

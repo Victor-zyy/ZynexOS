@@ -50,6 +50,7 @@ riscv_detect_memory(void)
 // --------------------------------------------------------------
 
 static void mem_init_mp(void);
+static void flash_map_init(void);
 static void boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, uint64_t perm);
 static void check_page_free_list(bool only_low_memory);
 static void check_page_alloc(void);
@@ -140,7 +141,7 @@ mem_init(void)
 	// following line.)
 
 	// Permissions: kernel R, user R
-	// kern_pgdir[PD0X(UVPT)] = PDE_ENTRY(PADDR(kern_pgdir)) | PTE_U | PTE_V; /* FIXME: PTE_U is unsure */
+	// kern_pgdir[PD0X(UVPT)] = PDE_ENTRY(PADDR(kern_pgdir)) |  PTE_V; /* FIXME: PTE_U is unsure */
 
 	//////////////////////////////////////////////////////////////////////
 	// Allocate an array of npages 'struct PageInfo's and store it in 'pages'.
@@ -223,6 +224,9 @@ mem_init(void)
 	// Initialize the SMP-related parts of the memory map
 	mem_init_mp();
 
+	// Initialize the flash mapping for use
+	flash_map_init();
+
 	// 256MB for kernel
 	boot_map_region(kern_pgdir, KERNBASE + 0x80000000,  2 * PGSIZE * npages, 0x80000000, PTE_X | PTE_W | PTE_R | PTE_G);
 
@@ -280,6 +284,15 @@ mem_init_mp(void)
 		kstacktop_i = KSTACKTOP - (i + 1) * (KSTKSIZE + KSTKGAP);
 	}
 
+}
+
+// flash_init()
+#define FS_FLASH_ADDR 0x20000000
+#define FS_FLASH_SIZE 0x2000000
+static void
+flash_map_init()
+{
+  boot_map_region(kern_pgdir, FLASH_MAP_ADDR, FS_FLASH_SIZE, FS_FLASH_ADDR, PTE_W | PTE_R | PTE_U | PTE_V);
 }
 
 // --------------------------------------------------------------
@@ -582,15 +595,26 @@ page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 {
 	// Fill this function in
 	pte_t *p_pte = pgdir_walk(pgdir, va, true);
+
 	if(p_pte == NULL){
 		// page table couldn't be allocated
 		return -E_NO_MEM;
 	}
+
 	if(*p_pte){
-		page_remove(pgdir, va);
-	}	
-	pp->pp_ref++;
-	*p_pte = PTE_ENTRY(page2pa(pp)) |  perm | PTE_V;
+	    //do some necessary check
+	    if((*p_pte & (~0x3ff)) != PTE_ENTRY(page2pa(pp))){
+	      page_remove(pgdir, va);
+	      pp->pp_ref++;
+	      *p_pte = PTE_ENTRY(page2pa(pp)) |  perm | PTE_V;
+	    }else{
+	      //just change the perm of the pte
+	      *p_pte = PTE_ENTRY(page2pa(pp)) |  perm | PTE_V;
+	    }
+	}else{
+	  pp->pp_ref++;
+	  *p_pte = PTE_ENTRY(page2pa(pp)) |  perm | PTE_V;
+	}
 	
 	if(pp == page_free_list){
 		// handle the Corner-case hint

@@ -171,4 +171,11 @@ inline void local_flush_tlb_page_asid(unsigned long addr,
                          : "memory");
 }
 
+
+static inline void
+breakpoint(void)
+{
+	asm volatile("ebreak");
+}
+
 #endif /* !_INC_RISCV_H */

@@ -5,6 +5,10 @@
 #include <inc/riscv/memlayout.h>
 #include <inc/riscv/trap.h>
 
+	
+	.globl uvpt
+	.set uvpt, UVPT
+
 # Shift Right Logical 
 #define SRL(val, shamt)		(((val) >> (shamt)) & ~(-1 << (32 - (shamt))))
 

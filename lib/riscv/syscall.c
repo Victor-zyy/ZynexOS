@@ -94,6 +94,12 @@ sys_env_set_status(envid_t envid, int status)
 }
 
 int
+sys_env_set_trapframe(envid_t envid, struct Trapframe *tf)
+{
+	return syscall(SYS_env_set_trapframe, 1, envid, (uint64_t) tf, 0, 0, 0);
+}
+
+int
 sys_env_set_pgfault_upcall(envid_t envid, void *upcall)
 {
 	return syscall(SYS_env_set_pgfault_upcall, 1, envid, (uint64_t) upcall, 0, 0, 0);
@@ -109,4 +115,23 @@ int64_t
 sys_ipc_recv(void *dstva)
 {
 	return syscall(SYS_ipc_recv, 1, (uint64_t)dstva, 0, 0, 0, 0);
+}
+
+
+int
+sys_page_clear_dirty(envid_t srcenv, void *srcva, envid_t dstenv, void *dstva)
+{
+	return syscall(SYS_page_clear_dirty, 1, srcenv, (uint64_t) srcva, dstenv, (uint64_t) dstva, 0);
+}
+
+int
+sys_uvpt_pte(void *srcva)
+{
+        return syscall(SYS_uvpt_pte, 0, (uint64_t)srcva, 0, 0, 0, 0);
+}
+	
+int
+sys_copy_shared_pages(envid_t child)
+{
+        return syscall(SYS_copy_shared_pages, 1, child, 0, 0, 0, 0);
 }

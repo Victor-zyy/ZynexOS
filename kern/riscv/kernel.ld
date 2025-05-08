@@ -37,12 +37,14 @@ SECTIONS
 		*(.data) *(.data.rel.ro*) *(.data*)
 	}
  
+	. = ALIGN(0x1000);
 	PROVIDE(edata = .);
 
 	.bss : {
 		*(.bss)
 	}
 
+	. = ALIGN(0x1000);
 	PROVIDE(end = .);
 
 	/DISCARD/ : {

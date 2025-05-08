@@ -66,6 +66,8 @@ ipc_send(envid_t to_env, uint64_t val, void *pg, int perm)
 		srcva = pg;
 	}
 	// keeps trying until it succeeds
+	//cprintf("to_env : %x val : %d pg : 0x%08lx perm : %x\n", to_env,
+	//	val, pg, perm);
 	while((r = sys_ipc_try_send(to_env, val, srcva, perm)) < 0){
 		if(r != -E_IPC_NOT_RECV){
 		  panic("sys_ipc_send panic %e", r);

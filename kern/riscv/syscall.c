@@ -56,10 +56,12 @@ sys_env_destroy(envid_t envid)
 
 	if ((r = envid2env(envid, &e, 1)) < 0)
 		return r;
+	#if 0
 	if (e == curenv)
 		cprintf("[%08x] exiting gracefully\n", curenv->env_id);
 	else
 		cprintf("[%08x] destroying %08x\n", curenv->env_id, e->env_id);
+	#endif
 	env_destroy(e);
 	return 0;
 }
@@ -367,10 +369,9 @@ sys_ipc_try_send(envid_t envid, uint64_t value, void *srcva, unsigned perm)
 
 	if(!env->env_ipc_recving){
 	// env is not currently blocked in sys_ipc_recv
-		//cprintf("env->env_id : %x env_status : %d\n", env->env_id, env->env_status);
+	  //cprintf("target env->env_id : %x env_status : %d\n", env->env_id, env->env_status);
 		return -E_IPC_NOT_RECV;
 	}
-	
 	if(((uint64_t)srcva < UTOP) && ((uint64_t)srcva % PGSIZE != 0)){
 
 	}
@@ -415,7 +416,6 @@ sys_ipc_try_send(envid_t envid, uint64_t value, void *srcva, unsigned perm)
 							//
 	// clear the IPC receiving flag
 	env->env_ipc_recving = 0;
-
 	return 0; // for success
 
 	panic("sys_ipc_try_send not implemented");
@@ -436,6 +436,7 @@ static int
 sys_ipc_recv(void *dstva)
 {
 	// block
+	// cprintf("block recv get here\n");
 	if(curenv->env_ipc_recving){
 		curenv->env_status = ENV_NOT_RUNNABLE;
 		sched_yield(0);
@@ -458,6 +459,105 @@ sys_ipc_recv(void *dstva)
 	//
 }
 
+/*
+ * clear the dirty bit of the PTE entry using the uvpt and uvpd
+ * Hint: using the sys_page_map system call
+ */
+int
+sys_page_clear_dirty(envid_t srcenv, void *srcva, envid_t dstenv, void *dstva)
+{
+  int r = 0;
+  // must be the env itself
+  assert(srcenv == dstenv);
+  assert(srcva == dstva);
+
+  pte_t * pte;
+  pte = pgdir_walk(curenv->env_pgdir, srcva, false);
+
+  assert(pte != NULL);
+
+  if ((r = sys_page_map(srcenv, srcva, dstenv, dstva, *pte & PTE_SYSCALL)) < 0)
+    return r;
+
+  return 0;
+}
+
+/*
+ * walk the curenv pgdir to search for the pte entry
+ */
+
+int
+sys_uvpt_pte(void *srcva){
+    pte_t * pte;
+    pte = pgdir_walk(curenv->env_pgdir, srcva, false);
+    return pte == NULL ? 0 : *pte;
+}
+
+
+int
+sys_copy_shared_pages(envid_t child)
+{
+
+  // #define MAXFD		32
+// Bottom of file descriptor area
+// #define FDTABLE		0xD0000000
+// Bottom of file data area.  We reserve one data page for each FD,
+// which devices can use if they choose.
+// #define FILEDATA	(FDTABLE + MAXFD*PGSIZE)
+
+// Return the 'struct Fd*' for file descriptor index i
+// #define INDEX2FD(i)	((struct Fd*) (uintptr_t)(FDTABLE + (i)*PGSIZE))
+// Return the file data page for file descriptor index i
+// #define INDEX2DATA(i)	((char*) (uintptr_t)(FILEDATA + (i)*PGSIZE))
+//FILEDATA_TABLE  starts from 0xD0000000
+  #define PTE_SHARE 0x200
+    pte_t * pte;
+    int perm = 0;
+    int i = 0;
+    int r;
+    uint64_t addr = 0xD0000000;
+    for(i = 0; i < 64; i++){
+      pte = pgdir_walk(curenv->env_pgdir, (void *)(addr + i * PGSIZE), false);
+
+      if( pte != NULL)
+        perm = *pte & PTE_SYSCALL;
+      else
+	continue;
+
+      if( perm & PTE_SHARE){ 
+	if((r = sys_page_map(0, (void *)addr, child, (void *)addr, PTE_SHARE | perm | PTE_U)) < 0){
+	  return r;
+	}
+      }
+    }
+    return 0;
+}
+// Set envid's trap frame to 'tf'.
+// tf is modified to make sure that user environments always run at code
+// protection level 3 (CPL 3), interrupts enabled, and IOPL of 0.
+//
+// Returns 0 on success, < 0 on error.  Errors are:
+//	-E_BAD_ENV if environment envid doesn't currently exist,
+//		or the caller doesn't have permission to change envid.
+static int
+sys_env_set_trapframe(envid_t envid, struct Trapframe *tf)
+{
+	// LAB 5: Your code here.
+	// Remember to check whether the user has supplied us with a good
+	// address!
+	// Step 1. do some necessary check
+	struct Env *env;
+	int ret = envid2env(envid, &env, 1);
+	if(ret < 0){
+		return -E_BAD_ENV;	
+	}
+	// Step 2. set env->env_tf is *tf
+	env->env_tf = *tf;
+	return 0; // on success
+						//
+	panic("sys_env_set_trapframe not implemented");
+}
+
 // Dispatches to the correct kernel function, passing the arguments.
 int32_t
 syscall(uint64_t syscallno, uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4, uint64_t a5)
@@ -478,10 +578,13 @@ syscall(uint64_t syscallno, uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4, 
 	case SYS_page_alloc: ret = sys_page_alloc((envid_t)a1, (void *)a2, (int)a3); break;
 	case SYS_page_map: ret = sys_page_map((envid_t)a1, (void *)a2, (envid_t)a3, (void *)a4, (int)a5); break;
 	case SYS_page_unmap: ret = sys_page_unmap((envid_t)a1, (void *)a2); break;
+	case SYS_env_set_trapframe: ret = sys_env_set_trapframe((envid_t)a1, (struct Trapframe*)a2); break;
 	case SYS_env_set_pgfault_upcall: ret = sys_env_set_pgfault_upcall((envid_t)a1, (void *)a2); break;
 	case SYS_ipc_try_send: ret = sys_ipc_try_send((envid_t)a1, (uint32_t)a2, (void*)a3, (unsigned)a4); break;
 	case SYS_ipc_recv: sys_ipc_recv((void *)a1); break;
-				
+	case SYS_page_clear_dirty: ret = sys_page_clear_dirty((envid_t)a1, (void *)a2, (envid_t)a3, (void *)a4); break;
+	case SYS_uvpt_pte: ret = sys_uvpt_pte((void *)a1); break;
+	case SYS_copy_shared_pages: ret = sys_copy_shared_pages((envid_t)a1); break;
 
 	default:
 		return -E_INVAL;

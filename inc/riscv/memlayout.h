@@ -59,7 +59,7 @@
  *                     +------------------------------+ 0xfffffc7f f0000000
  *                     |                              |
  *                     |                              |
- *                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ *                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 0xfffff000 00000000
  *                     .                              .
  *                     .                              .
  *                     .                              .
@@ -105,7 +105,8 @@
  */
 
 // User read-only virtual page table (see 'uvpt' below)
-#define UVPT		0xfffffe7ff0000000
+// #define UVPT		0xfffffe7ff0000000
+#define UVPT		0xffff800000000000
 // Read-only copies of the Page structures
 #define UPAGES		0xfffffdfff0000000
 // Read-only copies of the global env structures
@@ -137,11 +138,15 @@
 // Physical address of startup code for non-boot CPUs (APs)
 // Just one Page for mpentry code
 #define MPENTRY_PADDR	0x80100000
+#define FLASH_MAP_ADDR  0xfffff00000000000
 
 #ifndef __ASSEMBLER__
 
 typedef uint64_t pte_t;
 typedef uint64_t pde_t;
+
+// we use this in kernel
+extern volatile pte_t uvpt[];     // VA of "virtual page table"
 
 #if JOS_USER
 /*
