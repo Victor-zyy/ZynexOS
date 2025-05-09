@@ -33,7 +33,17 @@ _start:
 	li   a0, 0 // for argc
 	li   a1, 0 // for argv
 
+	call libmain
+1:	j 1b
+
 args_exist:
+	// set up the argc and argvs
+	// a0 points to argc
+	// a1 points t0 argv
+	ld	a0,     (sp)
+	ld	a1,     8(sp)
+	addi	sp,	sp,    8
+
 	call libmain
 1:	j 1b
 

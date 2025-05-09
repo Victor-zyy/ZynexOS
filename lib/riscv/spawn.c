@@ -198,8 +198,10 @@ init_stack(envid_t child, const char **argv, uintptr_t *init_esp)
 	// Count the number of arguments (argc)
 	// and the total amount of space needed for strings (string_size).
 	string_size = 0;
-	for (argc = 0; argv[argc] != 0; argc++)
-		string_size += strlen(argv[argc]) + 1;
+	for (argc = 0; argv[argc] != 0; argc++){
+	  //cprintf("argc : %d argv[%d] : %s\n", argc, argc, argv[argc]);
+	  string_size += strlen(argv[argc]) + 1;
+	}
 
 	// Determine where to place the strings and the argv array.
 	// Set up pointers into the temporary page 'UTEMP'; we'll map a page
@@ -207,9 +209,11 @@ init_stack(envid_t child, const char **argv, uintptr_t *init_esp)
 	// at (USTACKTOP - PGSIZE).
 	// strings is the topmost thing on the stack.
 	string_store = (char*) UTEMP + PGSIZE - string_size;
+	//cprintf("string_store addr : 0x%08lx\n", string_store);
 	// argv is below that.  There's one argument pointer per argument, plus
 	// a null pointer.
-	argv_store = (uintptr_t*) (ROUNDDOWN(string_store, 4) - 4 * (argc + 1));
+	argv_store = (uintptr_t*) (ROUNDDOWN(string_store, 8) - 8 * (argc + 1));/* FIXME: 4->8  */
+	//cprintf("argv_store addr : 0x%08lx\n", argv_store);
 
 	// Make sure that argv, strings, and the 2 words that hold 'argc'
 	// and 'argv' themselves will all fit in a single stack page.
