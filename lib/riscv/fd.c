@@ -81,13 +81,15 @@ fd_lookup(int fdnum, struct Fd **fd_store)
 			cprintf("[%08x] bad fd %d\n", thisenv->env_id, fdnum);
 		return -E_INVAL;
 	}
-	fd = INDEX2FD(fdnum);
 
+	fd = INDEX2FD(fdnum);
+	// cprintf("fdnum : %d fd : 0x%08lx pte : %x\n", fdnum, fd, sys_uvpt_pte(fd));
 	if((sys_uvpt_pte(fd) & PTE_V) == 0){
 		if (debug)
 			cprintf("[%08x] closed fd %d\n", thisenv->env_id, fdnum);
 		return -E_INVAL;
 	}
+
 	*fd_store = fd;
 	return 0;
 }
@@ -179,7 +181,6 @@ dup(int oldfdnum, int newfdnum)
 	char *ova, *nva;
 	pte_t pte;
 	struct Fd *oldfd, *newfd;
-
 	if ((r = fd_lookup(oldfdnum, &oldfd)) < 0)
 		return r;
 	close(newfdnum);
@@ -246,6 +247,7 @@ write(int fdnum, const void *buf, size_t n)
 	struct Dev *dev;
 	struct Fd *fd;
 
+	//cprintf("write fdnum : %d n : %d buf : %s\n", fdnum, n, buf);
 	if ((r = fd_lookup(fdnum, &fd)) < 0
 	    || (r = dev_lookup(fd->fd_dev_id, &dev)) < 0)
 		return r;

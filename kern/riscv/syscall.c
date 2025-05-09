@@ -525,7 +525,7 @@ sys_copy_shared_pages(envid_t child)
 	continue;
 
       if( perm & PTE_SHARE){ 
-	if((r = sys_page_map(0, (void *)addr, child, (void *)addr, PTE_SHARE | perm | PTE_U)) < 0){
+	if((r = sys_page_map(0, (void *)(addr + i * PGSIZE), child, (void *)(addr + i * PGSIZE), PTE_SHARE | perm | PTE_U)) < 0){
 	  return r;
 	}
       }
