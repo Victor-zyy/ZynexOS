@@ -21,6 +21,7 @@ struct PageInfo *pages;		// Physical page state array
 static struct PageInfo *page_free_list;	// Free list of physical pages
 static size_t firmmem;
 
+#define debug 0
 // --------------------------------------------------------------
 // Detect machine's physical memory setup.
 // --------------------------------------------------------------
@@ -386,6 +387,7 @@ page_alloc(int alloc_flags)
 			page_free_list = page_free_list->pp_link;
 			char *pg_addr = (char *)page2kva(pg_info);
 			pg_info->pp_link = NULL;
+			pg_info->pp_ref = 0;/* FIXME:  */
 			// Physical Page
 			memset(pg_addr, '\0' , PGSIZE);
 			return pg_info;
@@ -393,6 +395,7 @@ page_alloc(int alloc_flags)
 	}else{
 			page_free_list = page_free_list->pp_link;
 			pg_info->pp_link = NULL;
+			pg_info->pp_ref = 0;/* FIXME:  */
 			return pg_info;
 	}
 	
@@ -409,6 +412,7 @@ page_free(struct PageInfo *pp)
 	// Fill this function in
 	// Hint: You may want to panic if pp->pp_ref is nonzero or
 	// pp->pp_link is not NULL.
+        //cprintf("page_free call time\n");
 	if(pp->pp_ref != 0){
 		panic("pp_ref is none zero, Please check!\n");
 	}
@@ -429,6 +433,8 @@ page_free(struct PageInfo *pp)
 void
 page_decref(struct PageInfo* pp)
 {
+	if(debug)
+	    cprintf("page_decref pp_ref %x\n", pp->pp_ref);
 	if (--pp->pp_ref == 0)
 		page_free(pp);
 }
@@ -465,6 +471,7 @@ pgdir_walk_through(pde_t *pgdir, const void *va, pte_t **PTE){
   // Now we temoprary don't use large page actually
   physaddr_t paddr =  PDE_PHY(pgdir[PD0X(va)]);
   pgdir = (pde_t *)KADDR(paddr);
+
   if(((pgdir[PD1X(va)]) & PTE_V) == 0) {
     return false;
   }
@@ -601,21 +608,46 @@ page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 		return -E_NO_MEM;
 	}
 
+
 	if(*p_pte){
 	    //do some necessary check
-	    if((*p_pte & (~0x3ff)) != PTE_ENTRY(page2pa(pp))){
+	    if(debug){
+	      if((uint64_t)va == 0xd0002000){
+		cprintf("sys_page_insert : pp_ref %d *p_pte : 0x%08x page2pa(pp) : 0x%08x\n",
+			pp->pp_ref, *p_pte, PTE_ENTRY(page2pa(pp)));
+	      }
+	    }
+
+	    if((*p_pte & (~0xffc00000000003ff)) != PTE_ENTRY(page2pa(pp))){
 	      page_remove(pgdir, va);
 	      pp->pp_ref++;
 	      *p_pte = PTE_ENTRY(page2pa(pp)) |  perm | PTE_V;
+		
 	    }else{
 	      //just change the perm of the pte
 	      *p_pte = PTE_ENTRY(page2pa(pp)) |  perm | PTE_V;
 	    }
+
 	}else{
+
+	    if(debug){
+	      if((uint64_t)va == 0xd0002000){
+		cprintf("sys_page_insert : pp_ref 0x%x  page2pa(pp) : 0x%08x",
+			pp->pp_ref, PTE_ENTRY(page2pa(pp)));
+	      }
+	    }
+
 	  pp->pp_ref++;
 	  *p_pte = PTE_ENTRY(page2pa(pp)) |  perm | PTE_V;
+	    if(debug){
+	      if((uint64_t)va == 0xd0002000){
+		cprintf(" after pp_ref 0x%x  page2pa(pp) : 0x%08x\n",
+			pp->pp_ref, PTE_ENTRY(page2pa(pp)));
+	      }
+	    }
 	}
 	
+
 	if(pp == page_free_list){
 		// handle the Corner-case hint
 		page_free_list = page_free_list->pp_link;
@@ -682,6 +714,11 @@ page_remove(pde_t *pgdir, void *va)
 		return;
 	}		
 	// decrement the pp_ref if it counts to zero then free it out
+	// assert if pg_info ref is zero? bug?
+	if(pg_info->pp_ref == 0){
+	  cprintf("why pg_info pp_ref is zero at va : 0x%08lx\n", va);
+	}
+	assert(pg_info->pp_ref != 0);
 	page_decref(pg_info);
 
 	// if such a PTE exist then the pte entry must be set to 0

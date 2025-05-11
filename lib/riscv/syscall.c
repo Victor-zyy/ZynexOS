@@ -135,3 +135,14 @@ sys_copy_shared_pages(envid_t child)
 {
         return syscall(SYS_copy_shared_pages, 1, child, 0, 0, 0, 0);
 }
+
+
+int
+sys_disable_irq(void){
+        return syscall(SYS_disable_irq, 0, 0, 0, 0, 0, 0);
+}
+
+int
+sys_enable_irq(void){
+        return syscall(SYS_enable_irq, 0, 0, 0, 0, 0, 0);
+}

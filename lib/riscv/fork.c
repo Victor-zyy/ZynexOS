@@ -6,7 +6,7 @@
 // PTE_COW marks copy-on-write page table entries.
 // It is one of the bits explicitly allocated to user processes (PTE_AVAIL).
 #define PTE_COW	0x300	
-
+#define debug 0
 //
 // Custom page fault handler - if faulting page is copy-on-write,
 // map in our own private writable copy.
@@ -15,7 +15,8 @@ static void
 pgfault(struct UTrapframe *utf)
 {
 	void *addr = (void *) utf->utf_fault_va;
-	//cprintf("envid 0x%x pgfault cause = 0x%x epc = 0x%08x va : 0x%08lx\n", sys_getenvid(), utf->utf_cause, utf->utf_epc, addr);
+	if(debug)
+	  cprintf("envid 0x%x pgfault cause = 0x%x epc = 0x%08x va : 0x%08lx\n", sys_getenvid(), utf->utf_cause, utf->utf_epc, addr);
 	int r;
 
 	// Check that the faulting access was (1) a write, and (2) to a
@@ -138,6 +139,7 @@ fork(void)
 	// FILEDATA_TABLE
 	if((r = sys_copy_shared_pages(envid)) < 0)
 		panic("sys_copy_shared_pages: %e", r);
+
 	// Step 4. allocate a new page for child exception stack
 	if((r = sys_page_alloc(envid, (void *)(UXSTACKTOP - PGSIZE), PTE_W | PTE_U | PTE_R | PTE_V)) < 0)
 		panic("sys_page_alloc: %e", r);

@@ -17,9 +17,9 @@ libmain(int argc, char **argv)
         thisenv = &envs[ENVX(sys_getenvid())];
 
 	// save the name of the program so that panic() can use it
-	if (argc > 0)
-		binaryname = argv[0];
-
+	if (argc > 0){
+	  binaryname = argv[0];
+	}
 	// call user main routine
 	umain(argc, argv);
 

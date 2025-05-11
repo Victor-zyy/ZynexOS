@@ -187,9 +187,9 @@ int CfiFlashWrite(const uint32_t *buffer, uint32_t offset, uint32_t nbytes)
     uint32_t words = B2W(nbytes);
     uint32_t wordOffset = B2W(offset);
 
-    //disable_irq();
+    sys_disable_irq();
     CfiFlashWriteBuf(wordOffset, buffer, words, base);
-    //enable_irq();
+    sys_enable_irq();
 
     return FLASH_OK;
 }
@@ -211,11 +211,11 @@ int CfiFlashRead(uint32_t *buffer, uint32_t offset, uint32_t nbytes)
     uint32_t words = B2W(nbytes);
     uint32_t wordOffset = B2W(offset);
 
-    //disable_irq();
+    sys_disable_irq();
     for (i = 0; i < words; i++) {
         buffer[i] = base[wordOffset + i];
     }
-    //enable_irq();
+    sys_enable_irq();
     return FLASH_OK;
 }
 
@@ -233,13 +233,13 @@ int CfiFlashErase(uint32_t offset)
 
     uint32_t blkAddr = CfiFlashEraseBlkWordAddr(B2W(offset));
 
-    //disable_irq();
+    sys_disable_irq();
     base[blkAddr] = CFIFLASH_CMD_ERASE;
     //dsb();
     base[blkAddr] = CFIFLASH_CMD_CONFIRM;
     while (!CfiFlashIsReady(blkAddr, base)) { }
     base[0] = CFIFLASH_CMD_CLEAR_STATUS;
-    //enable_irq();
+    sys_enable_irq();
 
     return FLASH_OK;
 }

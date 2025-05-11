@@ -22,6 +22,8 @@
 .text
 .globl _start
 _start:
+	# nuke frame pointer ;FIXME: fp pointer
+	mv	fp, zero
 	// See if we were started with arguments on the stack
 	li   t0, USTACKTOP
 	sub  t0, t0, sp
@@ -40,9 +42,9 @@ args_exist:
 	// set up the argc and argvs
 	// a0 points to argc
 	// a1 points t0 argv
-	ld	a0,     (sp)
+	ld	a0,     0(sp)
 	ld	a1,     8(sp)
-	addi	sp,	sp,    8
+	addi	sp,	sp,    16
 
 	call libmain
 1:	j 1b

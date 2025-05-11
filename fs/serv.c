@@ -91,8 +91,12 @@ openfile_lookup(envid_t envid, uint32_t fileid, struct OpenFile **po)
 	struct OpenFile *o;
 
 	o = &opentab[fileid % MAXOPEN];
-	if (pageref(o->o_fd) <= 1 || o->o_fileid != fileid)
+	if (pageref(o->o_fd) <= 1 || o->o_fileid != fileid){
+	        if (debug)
+		  cprintf("openfile_lookup %08x fileid %08x opentab o->o_fd : %08x pageref(o->o_fd) : %08x\n",
+			  envid, fileid, o->o_fd, pageref(o->o_fd));
 		return -E_INVAL;
+	}
 	*po = o;
 	return 0;
 }
@@ -223,6 +227,9 @@ serve_read(envid_t envid, union Fsipc *ipc)
 
 	// Step 2. call the relevant file system function
 	r = file_read(o->o_file, ret->ret_buf, req->req_n, o->o_fd->fd_offset);
+
+	if (debug)
+		cprintf("serve_read after file_read %08x error %d\n", envid, r);
 	// Step 3. update the seek position
 	o->o_fd->fd_offset += r;
 	// Step 4. return the number of bytes read

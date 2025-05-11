@@ -65,6 +65,8 @@ int64_t	sys_ipc_recv(void *rcv_pg);
 int     sys_page_clear_dirty(envid_t srcenv, void *srcva, envid_t dstenv, void *dstva);
 int     sys_uvpt_pte(void *srcva);
 int     sys_copy_shared_pages(envid_t child);
+int     sys_disable_irq(void);
+int     sys_enable_irq(void);
 
 // This must be inlined.  Exercise for reader: why?
 // don't let the sys_exofork has stack pushes or pop etc.

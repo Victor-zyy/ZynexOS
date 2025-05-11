@@ -161,6 +161,7 @@ trap_dispatch(struct Trapframe *tf)
 	    switch(tf->scause){
 	    case IRQ_TIMER: 
 	      //cprintf("tf->orig_a0 : 0x%08lx\n", tf->orig_a0);
+	      //cprintf("timer curenv id : %x tf->sepc : 0x%08lx\n", curenv->env_id, tf->sepc);
 	      tf->orig_a0 = 0;
 	      csr_clear(CSR_SIE, MIP_STIP);
 	      // reset the mtimecmp register
@@ -336,6 +337,7 @@ page_fault_handler(struct Trapframe *tf)
 	uint64_t *sp = (uint64_t *)UXSTACKTOP;
 	if(tf->sp >= (UXSTACKTOP-PGSIZE) && tf->sp < UXSTACKTOP){
 		// handle recrusively call of user page fault handler
+	  cprintf("recrusively uxstack tf->sepc : 0x%08lx faultva : 0x%08lx\n", tf->sepc, fault_va);
 		sp = (uint64_t *)tf->sp;
 		*(--sp) = 0; //empty word
 	}	
@@ -388,9 +390,12 @@ page_fault_handler(struct Trapframe *tf)
 bad:
 	cprintf("[%08x] user fault va %08lx sepc %08lx scause %08lx\n",
 		curenv->env_id, fault_va, tf->sepc, tf->scause);
+	
+
+	mon_backtrace(0, NULL, tf);
+
 	print_trapframe(tf);
 	env_destroy(curenv);
-
 
 }
 

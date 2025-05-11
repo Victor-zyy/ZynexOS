@@ -83,7 +83,7 @@ union Fsipc {
 		off_t req_size;
 	} set_size;
 	struct Fsreq_read {
-		int req_fileid;
+		int req_fileid; /* FIXME:  */
 		size_t req_n;
 	} read;
 	struct Fsret_read {

@@ -301,8 +301,9 @@ umain(int argc, char **argv)
 
 	while (1) {
 		char *buf;
-
+		//cprintf("sh getting here\n");
 		buf = readline(interactive ? "$ " : NULL);
+		//cprintf("readline after\n");
 		if (buf == NULL) {
 			if (debug)
 				cprintf("EXITING\n");

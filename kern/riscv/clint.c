@@ -3,6 +3,7 @@
 #include <inc/riscv/stdio.h>
 #include <kern/riscv/env.h>
 
+#define debug 0
 /* In this file, we are gonna to initialize the timer in clint,
  * so that we can make the preemptive multitasking done.
  * And, differs from the lapic of each rtc to cpus in SMP, in riscv
@@ -31,7 +32,8 @@ void clint_init(void){
 void reset_timer(void){
 
   static int i = 0;
-  //cprintf("curenv->id 0x%08lx sepc 0x%08lx getting into timer times : %d\n", curenv->env_id, curenv->env_tf.sepc, i++);
+  if(debug)
+    cprintf("curenv->id 0x%08lx sepc 0x%08lx getting into timer times : %d\n", curenv->env_id, curenv->env_tf.sepc, i++);
   /* set mtimecmp for about 1s + mtime */
   sbi_set_time(get_ticks() + TIME_TENMILISECOND_TICKS);
   /* enable interrupt */

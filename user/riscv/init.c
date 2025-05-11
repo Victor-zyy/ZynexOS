@@ -65,5 +65,6 @@ umain(int argc, char **argv)
 			continue;
 		}
 		wait(r);
+		asm volatile("ebreak");/* FIXME: force into kern debug mode */
 	}
 }

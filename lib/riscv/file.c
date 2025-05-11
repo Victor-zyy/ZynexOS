@@ -117,13 +117,20 @@ devfile_read(struct Fd *fd, void *buf, size_t n)
 	// system server.
 	int r;
 
+	if(debug)
+	  cprintf("[%08x] read devfile_read start!\n", thisenv->env_id);
 	fsipcbuf.read.req_fileid = fd->fd_file.id;
 	fsipcbuf.read.req_n = n;
-	if ((r = fsipc(FSREQ_READ, NULL)) < 0)
+	if ((r = fsipc(FSREQ_READ, NULL)) < 0){
+		if(debug)
+		  cprintf("[%08x] read devfile_read error %d !\n", thisenv->env_id, r);
 		return r;
+	}
 	assert(r <= n);
 	assert(r <= PGSIZE);
 	memmove(buf, fsipcbuf.readRet.ret_buf, r);
+	if(debug)
+	  cprintf("[%08x] read devfile_read end!\n", thisenv->env_id);
 	return r;
 }
 

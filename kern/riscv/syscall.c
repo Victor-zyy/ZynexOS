@@ -1,6 +1,7 @@
 /* See COPYRIGHT for copyright information. */
 
 #include <inc/riscv/riscv.h>
+#include <inc/riscv/csr.h>
 #include <inc/riscv/error.h>
 #include <inc/riscv/string.h>
 #include <inc/riscv/assert.h>
@@ -94,6 +95,8 @@ sys_exofork(void)
 	// set created status is ENV_NOT_TUNNABLE
 	env->env_status = ENV_NOT_RUNNABLE;
 	env->env_parent_id = curenv->env_id;
+	// ipc reset value
+	env->env_ipc_recving = 0;
 	// copy regs set from parent to env
 	env->env_tf = curenv->env_tf;	
 	env->env_tf.a0 = 0; 
@@ -262,10 +265,12 @@ sys_page_map(envid_t srcenvid, void *srcva,
 	if(ret < 0){
 		return -E_BAD_ENV;	
 	}
-	if((uintptr_t)srcva >= UTOP || (uintptr_t)srcva % PGSIZE != 0)	
+
+
+	if((uintptr_t)srcva >= (uintptr_t)UTOP || (uintptr_t)srcva % PGSIZE != 0)	
 		return -E_INVAL;
 
-	if((uintptr_t)dstva >= UTOP || (uintptr_t)dstva % PGSIZE != 0)	
+	if((uintptr_t)dstva >= (uintptr_t)UTOP || (uintptr_t)dstva % PGSIZE != 0)	
 		return -E_INVAL;
 	
 	pte_t *pte;
@@ -275,6 +280,9 @@ sys_page_map(envid_t srcenvid, void *srcva,
 	
 	if((perm & PTE_W) && ((*pte & PTE_W )== 0))
 		return -E_INVAL;
+
+	//cprintf("sys_page_map envid_src : %x src_va : 0x%08lx envid_dst : %x dst_va : 0x%08lx ppref : %x\n",
+	//	envsrc->env_id, srcva, envdst->env_id, dstva, pginfo->pp_ref);
 
 	ret = page_insert(envdst->env_pgdir, pginfo, dstva, perm);
 
@@ -308,6 +316,8 @@ sys_page_unmap(envid_t envid, void *va)
 	if((uintptr_t)va >= UTOP || (uintptr_t)va % PGSIZE != 0)	
 		return -E_INVAL;
 	
+	// cprintf("sys_page_unmap envid : %x va : 0x%08lx\n",
+	//	env->env_id, va);
 	page_remove(env->env_pgdir, va);	
 
 	return 0;	 // success
@@ -367,6 +377,7 @@ sys_ipc_try_send(envid_t envid, uint64_t value, void *srcva, unsigned perm)
 	}
 	// Step 2. check srcva is below UTOP and send the page mapped at srcva
 
+	//cprintf("target env->env_id : %x env_status : %d\n", env->env_id, env->env_status);
 	if(!env->env_ipc_recving){
 	// env is not currently blocked in sys_ipc_recv
 	  //cprintf("target env->env_id : %x env_status : %d\n", env->env_id, env->env_status);
@@ -558,6 +569,20 @@ sys_env_set_trapframe(envid_t envid, struct Trapframe *tf)
 	panic("sys_env_set_trapframe not implemented");
 }
 
+int
+sys_disable_irq(void){
+  csr_clear(CSR_SIE, MIP_STIP);
+  //cprintf("disable irq\n");
+  return 0;
+}
+
+int
+sys_enable_irq(void){
+  //cprintf("enable irq\n");
+  csr_set(CSR_SIE, MIP_STIP);
+  return 0;
+}
+
 // Dispatches to the correct kernel function, passing the arguments.
 int32_t
 syscall(uint64_t syscallno, uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4, uint64_t a5)
@@ -585,6 +610,8 @@ syscall(uint64_t syscallno, uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4, 
 	case SYS_page_clear_dirty: ret = sys_page_clear_dirty((envid_t)a1, (void *)a2, (envid_t)a3, (void *)a4); break;
 	case SYS_uvpt_pte: ret = sys_uvpt_pte((void *)a1); break;
 	case SYS_copy_shared_pages: ret = sys_copy_shared_pages((envid_t)a1); break;
+	case SYS_disable_irq: ret = sys_disable_irq(); break;
+	case SYS_enable_irq: ret = sys_enable_irq(); break;
 
 	default:
 		return -E_INVAL;

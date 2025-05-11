@@ -7,6 +7,7 @@
 #include <kern/riscv/cpu.h>
 #include <kern/riscv/clint.h>
 
+#define debug 0
 void sched_halt(void);
 
 // Choose a user environment to run and run it.
@@ -14,8 +15,8 @@ void
 sched_yield(bool time)
 {
 	struct Env *idle;
-
-	//cprintf("sched_yield times %d next env_i ", time);
+	if(debug)
+	  cprintf("sched_yield times %d next env_i ", time);
 	// Implement simple round-robin scheduling.
 	//
 	// Search through 'envs' for an ENV_RUNNABLE environment in
@@ -40,7 +41,8 @@ sched_yield(bool time)
 		if( i == NENV)// no RUNNABLE ENV sch
 			sched_halt();
 		idle = &envs[i];
-		//cprintf(" %d sepc 0x%08x\n", i, idle->env_tf.sepc);
+		if(debug)
+		  cprintf(" %d sepc 0x%08x\n", i, idle->env_tf.sepc);
 		env_run(idle);
 	}
 
@@ -71,14 +73,16 @@ sched_yield(bool time)
 			//found one
 			//
 			idle = &envs[i];
-			//cprintf(" %d sepc 0x%08x\n", i, idle->env_tf.sepc);
+			if(debug)
+			  cprintf(" %d sepc 0x%08x\n", i, idle->env_tf.sepc);
 			env_run(idle);
 		}
 		sched_halt();
 	}else{
 		//find one do dome change
 		idle = &envs[i];
-		//cprintf(" %d sepc 0x%08x\n", i, idle->env_tf.sepc);
+		if(debug)
+		  cprintf(" %d sepc 0x%08x\n", i, idle->env_tf.sepc);
 		env_run(idle);
 	}
 	// sched_halt never returns

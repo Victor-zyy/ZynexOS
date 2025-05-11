@@ -22,7 +22,6 @@ va_is_mapped(void *va)
 bool
 va_is_dirty(void *va)
 {
-  
 	return (sys_uvpt_pte(va) & PTE_D) != 0;
 }
 

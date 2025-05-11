@@ -20,6 +20,8 @@ enum {
 	SYS_page_clear_dirty,
 	SYS_uvpt_pte,
 	SYS_copy_shared_pages,
+	SYS_disable_irq,
+	SYS_enable_irq,
 	NSYSCALLS
 };
 
