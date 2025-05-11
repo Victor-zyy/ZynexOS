@@ -20,6 +20,7 @@
 // Entrypoint - this is where the kernel (or our parent environment)
 // starts us running when we are initially loaded into a new environment.
 .text
+	.align 8
 .globl _start
 _start:
 	# nuke frame pointer ;FIXME: fp pointer

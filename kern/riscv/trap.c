@@ -201,6 +201,7 @@ trap_dispatch(struct Trapframe *tf)
    }
 
    // Unexpected trap: The user process or the kernel has a bug.
+    mon_backtrace(0, NULL, tf);
     print_trapframe(tf);
 
     if (((tf->status & SSTATUS_SPP) >> SPP_SHIFT ) == 1)
@@ -337,7 +338,7 @@ page_fault_handler(struct Trapframe *tf)
 	uint64_t *sp = (uint64_t *)UXSTACKTOP;
 	if(tf->sp >= (UXSTACKTOP-PGSIZE) && tf->sp < UXSTACKTOP){
 		// handle recrusively call of user page fault handler
-	  cprintf("recrusively uxstack tf->sepc : 0x%08lx faultva : 0x%08lx\n", tf->sepc, fault_va);
+	        cprintf("recrusively uxstack tf->sepc : 0x%08lx faultva : 0x%08lx\n", tf->sepc, fault_va);
 		sp = (uint64_t *)tf->sp;
 		*(--sp) = 0; //empty word
 	}	
@@ -384,6 +385,7 @@ page_fault_handler(struct Trapframe *tf)
 
 	curenv->env_tf.sp = (uintptr_t)sp;
 	curenv->env_tf.sepc= entry;
+	curenv->env_tf.orig_a0 = 0;/* FIXME:  */
 
 	env_run(curenv);
 	// Destroy the environment that caused the fault.

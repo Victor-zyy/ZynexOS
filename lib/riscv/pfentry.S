@@ -30,7 +30,8 @@
 // We then have call up to the appropriate page fault handler in C
 // code, pointed to by the global variable '_pgfault_handler'.
 
-.text
+	.text
+	.align 8
 .globl _pgfault_upcall
 _pgfault_upcall:
 	// Call the C page fault handler.

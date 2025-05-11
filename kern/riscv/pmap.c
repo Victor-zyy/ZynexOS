@@ -469,7 +469,7 @@ pgdir_walk_through(pde_t *pgdir, const void *va, pte_t **PTE){
     return false;
   }
   // Now we temoprary don't use large page actually
-  physaddr_t paddr =  PDE_PHY(pgdir[PD0X(va)]);
+  volatile physaddr_t paddr =  PDE_PHY(pgdir[PD0X(va)]);/* FIXME: add volatile */
   pgdir = (pde_t *)KADDR(paddr);
 
   if(((pgdir[PD1X(va)]) & PTE_V) == 0) {
@@ -673,16 +673,19 @@ page_lookup(pde_t *pgdir, void *va, pte_t **pte_store)
 	// Fill this function in
 	pte_t *p_pte = pgdir_walk(pgdir, va, false);
 
-	if(pte_store != NULL){
-	  *pte_store = p_pte;
-	}
-
 	if(p_pte == NULL){
 	  return NULL;
 	}
 
+	// /* FIXME: 0xd0002000 */
+	if(*p_pte == 0)
+	  return NULL; 
+
 	struct PageInfo *pg_info = pa2page((PTE_PHY(*p_pte)));
 
+	if(pte_store != NULL){
+	  *pte_store = p_pte;
+	}
 
 	return pg_info;
 }
@@ -709,6 +712,8 @@ page_remove(pde_t *pgdir, void *va)
 	pte_t *p_pte = NULL;
 	struct PageInfo *pg_info = page_lookup(pgdir, va, &p_pte);
 	
+	// cprintf("pagelookup va : 0x%08lx p_pte : 0x%08lx *p_pte : 0x%08lx pg_info : 0x%08lx pg_info_paddr : 0x%08x pg_info->pp_ref : %x\n",
+	//	va, p_pte, p_pte != NULL ? *p_pte : 0, pg_info, page2pa(pg_info), pg_info != NULL ? pg_info->pp_ref : 0);
 	if(pg_info == NULL){
 		//silently does nothing
 		return;
@@ -723,7 +728,8 @@ page_remove(pde_t *pgdir, void *va)
 
 	// if such a PTE exist then the pte entry must be set to 0
 	if(p_pte){
-			*p_pte = 0;
+	  *p_pte = 0;
+	  //cprintf("p_pte : 0x%08lx *p_pte : 0x%08lx\n", p_pte, *p_pte);
 	}
 	
 	// The TLB must be invalidated if you remove an entry from page table

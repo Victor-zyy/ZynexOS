@@ -41,6 +41,8 @@ pipe(int pfd[2])
 	    || (r = sys_page_alloc(0, fd1, PTE_V|PTE_W|PTE_U|PTE_R|PTE_SHARE)) < 0)
 		goto err1;
 
+	if(debug)
+	  cprintf("fd0_addr 0x%08x fd1_addr : 0x%08lx\n", fd0, fd1);
 	// allocate the pipe structure as first data page in both
 	va = fd2data(fd0);
 	if ((r = sys_page_alloc(0, va, PTE_V|PTE_W|PTE_U|PTE_R|PTE_SHARE)) < 0)
@@ -48,6 +50,8 @@ pipe(int pfd[2])
 	if ((r = sys_page_map(0, va, 0, fd2data(fd1), PTE_V|PTE_W|PTE_U|PTE_R|PTE_SHARE)) < 0)
 		goto err3;
 
+	if(debug)
+	  cprintf("fd0_data 0x%08x fd1_data : 0x%08lx\n", fd2data(fd0), fd2data(fd1));
 	// set up fd structures
 	fd0->fd_dev_id = devpipe.dev_id;
 	fd0->fd_omode = O_RDONLY;
@@ -56,7 +60,7 @@ pipe(int pfd[2])
 	fd1->fd_omode = O_WRONLY;
 
 	if (debug)
-		cprintf("[%08x] pipecreate %08x\n", thisenv->env_id, uvpt[PGNUM(va)]);
+	  cprintf("[%08x] pipecreate %08x\n", thisenv->env_id, (sys_uvpt_pte(va) >> 10 << 12));
 
 	pfd[0] = fd2num(fd0);
 	pfd[1] = fd2num(fd1);
@@ -79,8 +83,9 @@ _pipeisclosed(struct Fd *fd, struct Pipe *p)
 
 	while (1) {
 		n = thisenv->env_runs;
-		ret = pageref(fd) == pageref(p);
-		nn = thisenv->env_runs;
+		ret = pageref(fd) == pageref(p); /* FIXME: syscall envs + 2  */
+		nn = thisenv->env_runs - 2;
+		//cprintf("[%x] n : %d nn : %d ret %d\n", thisenv->env_id, n, nn, ret);
 		if (n == nn)
 			return ret;
 		if (n != nn && ret == 1)
@@ -111,7 +116,7 @@ devpipe_read(struct Fd *fd, void *vbuf, size_t n)
 	p = (struct Pipe*)fd2data(fd);
 	if (debug)
 		cprintf("[%08x] devpipe_read %08x %d rpos %d wpos %d\n",
-			thisenv->env_id, uvpt[PGNUM(p)], n, p->p_rpos, p->p_wpos);
+			thisenv->env_id, (sys_uvpt_pte(p) >> 10 << 12), n, p->p_rpos, p->p_wpos);
 
 	buf = vbuf;
 	for (i = 0; i < n; i++) {
@@ -146,7 +151,7 @@ devpipe_write(struct Fd *fd, const void *vbuf, size_t n)
 	p = (struct Pipe*) fd2data(fd);
 	if (debug)
 		cprintf("[%08x] devpipe_write %08x %d rpos %d wpos %d\n",
-			thisenv->env_id, uvpt[PGNUM(p)], n, p->p_rpos, p->p_wpos);
+			thisenv->env_id, (sys_uvpt_pte(p) >> 10 << 12), n, p->p_rpos, p->p_wpos);
 
 	buf = vbuf;
 	for (i = 0; i < n; i++) {

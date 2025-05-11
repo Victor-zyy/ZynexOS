@@ -39,6 +39,7 @@ umain(int argc, char **argv)
 	}
 	wait(pid);
 
+	// cprintf("parent is gonna to do next\n");
 	binaryname = "pipewriteeof";
 	if ((i = pipe(p)) < 0)
 		panic("pipe: %e", i);

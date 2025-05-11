@@ -126,6 +126,7 @@ fork(void)
 
 	// parent process 
 	// Step 3.for each writable or copy-on-write page in its address space
+	cprintf("address end 0x%08x\n", end);
 	for(addr = (uint8_t*) UTEXT; addr < end; addr += PGSIZE){
 	  j = (uint64_t)addr / PGSIZE;
 	  duppage(envid, j);	

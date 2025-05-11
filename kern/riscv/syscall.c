@@ -13,6 +13,7 @@
 #include <kern/riscv/console.h>
 #include <kern/riscv/sched.h>
 
+#define debug 0
 // Print a string to the system console.
 // The string is exactly 'len' characters long.
 // Destroys the environment on memory errors.
@@ -281,11 +282,15 @@ sys_page_map(envid_t srcenvid, void *srcva,
 	if((perm & PTE_W) && ((*pte & PTE_W )== 0))
 		return -E_INVAL;
 
-	//cprintf("sys_page_map envid_src : %x src_va : 0x%08lx envid_dst : %x dst_va : 0x%08lx ppref : %x\n",
-	//	envsrc->env_id, srcva, envdst->env_id, dstva, pginfo->pp_ref);
+	if(debug)
+	  cprintf("sys_page_map envid_src : %x src_va : 0x%08lx envid_dst : %x dst_va : 0x%08lx ppref : %x\n",
+		envsrc->env_id, srcva, envdst->env_id, dstva, pginfo->pp_ref);
 
 	ret = page_insert(envdst->env_pgdir, pginfo, dstva, perm);
 
+	if(debug)
+	  cprintf("sys_page_map after envid_src : %x src_va : 0x%08lx envid_dst : %x dst_va : 0x%08lx ppref : %x\n",
+		envsrc->env_id, srcva, envdst->env_id, dstva, pginfo->pp_ref);
 	if(ret < 0)
 		return ret;
 
@@ -316,8 +321,9 @@ sys_page_unmap(envid_t envid, void *va)
 	if((uintptr_t)va >= UTOP || (uintptr_t)va % PGSIZE != 0)	
 		return -E_INVAL;
 	
-	// cprintf("sys_page_unmap envid : %x va : 0x%08lx\n",
-	//	env->env_id, va);
+	if(debug)
+	  cprintf("sys_page_unmap envid : %x va : 0x%08lx\n",
+		env->env_id, va);
 	page_remove(env->env_pgdir, va);	
 
 	return 0;	 // success
@@ -536,9 +542,8 @@ sys_copy_shared_pages(envid_t child)
 	continue;
 
       if( perm & PTE_SHARE){ 
-	if((r = sys_page_map(0, (void *)(addr + i * PGSIZE), child, (void *)(addr + i * PGSIZE), PTE_SHARE | perm | PTE_U)) < 0){
+	if((r = sys_page_map(0, (void *)(addr + i * PGSIZE), child, (void *)(addr + i * PGSIZE), PTE_SHARE | perm | PTE_U)) < 0)
 	  return r;
-	}
       }
     }
     return 0;
