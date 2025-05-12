@@ -200,7 +200,7 @@ QEMUOPTS += -drive if=pflash,unit=0,format=raw,file=$(OBJDIR)/kern/kernel.img
 IMAGES = $(OBJDIR)/kern/kernel.img
 
 QEMUOPTS += -netdev user,id=n1,ipv6=off -device e1000,netdev=n1,mac=52:54:98:76:54:32 -nic user,hostfwd=tcp::$(PORT7)-:7 \
-	   -nic user,hostfwd=tcp::$(PORT80)-:80 -nic user,hostfwd=udp::$(PORT7)-:7 -object filter-dump,id=id,netdev=n1,file=qemu.pcap
+	   -nic user,hostfwd=tcp::$(PORT80)-:80 -nic user,hostfwd=udp::$(PORT7)-:7 -object filter-dump,id=id,netdev=n1,file=qemu.pcap #refer to qemu-options.hx in qemu-7.0.0
 QEMUOPTS += $(QEMUEXTRA)
 
 else
