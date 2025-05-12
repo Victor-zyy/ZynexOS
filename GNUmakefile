@@ -185,6 +185,10 @@ include fs/Makefrag
 
 CPUS ?= 1
 
+# common use for arch 
+PORT7	:= $(shell expr $(GDBPORT) + 1)
+PORT80	:= $(shell expr $(GDBPORT) + 2)
+
 ifeq ($(ARCH), riscv)
 
 QEMUOPTS = -M virt -m 256M -serial mon:stdio
@@ -195,9 +199,12 @@ QEMUOPTS += -drive if=pflash,unit=0,format=raw,file=$(OBJDIR)/kern/kernel.img
 
 IMAGES = $(OBJDIR)/kern/kernel.img
 
+QEMUOPTS += -netdev user,id=n1,ipv6=off -device e1000,netdev=n1,mac=52:54:98:76:54:32 -nic user,hostfwd=tcp::$(PORT7)-:7 \
+	   -nic user,hostfwd=tcp::$(PORT80)-:80 -nic user,hostfwd=udp::$(PORT7)-:7 -object filter-dump,id=id,netdev=n1,file=qemu.pcap
+QEMUOPTS += $(QEMUEXTRA)
+
 else
-PORT7	:= $(shell expr $(GDBPORT) + 1)
-PORT80	:= $(shell expr $(GDBPORT) + 2)
+
 QEMUOPTS = -drive file=$(OBJDIR)/kern/kernel.img,index=0,media=disk,format=raw -serial mon:stdio
 QEMUOPTS += $(shell if $(QEMU) -nographic -help | grep -q '^-D '; then echo '-D qemu.log'; fi)
 IMAGES = $(OBJDIR)/kern/kernel.img
