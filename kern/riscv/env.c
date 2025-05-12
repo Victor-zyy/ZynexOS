@@ -414,7 +414,7 @@ env_free(struct Env *e)
 	pte_t *pd2;
 	uint64_t pdeno, pteno;
 	uint64_t pde1no, pde2no;
-	physaddr_t pa;
+	physaddr_t pa, pa1, pa2;
 
 	// If freeing the current environment, switch to kern_pgdir
 	// before freeing the page directory, just in case the page
@@ -439,12 +439,12 @@ env_free(struct Env *e)
 
 	  for(pde1no = 0; pde1no <= PD1X(~0); pde1no++){
 
-		  // only look at mapped page tables
+	    // only look at mapped page tables
 	    if (!(pd1[pde1no] & PTE_V))
 		continue;
 
-	    pa   = PTE_ADDR(pd1[pde1no]);
-	    pd2   = (pde_t*) KADDR(pa);
+	    pa1   = PTE_ADDR(pd1[pde1no]);
+	    pd2   = (pde_t*) KADDR(pa1);
 
 	    for(pde2no = 0; pde2no <= PD2X(~0); pde2no++){
 
@@ -453,8 +453,8 @@ env_free(struct Env *e)
 		    continue;
 
 
-		pa = PTE_ADDR(pd2[pde2no]);
-		pt = (pde_t*) KADDR(pa);
+		pa2 = PTE_ADDR(pd2[pde2no]);
+		pt  = (pde_t*) KADDR(pa2);
 
 		// unmap all PTEs in this page table
 		for (pteno = 0; pteno <= PTX(~0); pteno++) {
@@ -464,13 +464,13 @@ env_free(struct Env *e)
 		
 		// free the page table itself
 		pd2[pde2no] = 0;
-		page_decref(pa2page(pa));
+		page_decref(pa2page(pa2));
 
 	    }
 
 	    // free the page table itself
 	    pd1[pde1no] = 0;
-	    page_decref(pa2page(pa));
+	    page_decref(pa2page(pa1));
 
 	  }
 

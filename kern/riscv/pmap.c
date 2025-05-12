@@ -328,12 +328,15 @@ page_init(void)
 	// Question:
 	// how to mark a pageinfo is in use:
 	// pp_link = NULL;
-	size_t i;
+	size_t i = 0;
 	// 1. page 0 is in use
+	cprintf("page_init start i : %d\n", i);
 	for(i = 0; i < firmmem / PGSIZE; i++){
 	    pages[i].pp_ref = 0;
 	    pages[i].pp_link = NULL;
 	};
+	cprintf("page_init i : %d\n", i);
+	cprintf("page_init after i : %d\n", firmmem / PGSIZE);
 	// 2. opensbi upwards mem is free
 	for(i = firmmem / PGSIZE; i < npages_basemem; i++){
 	  // we ask for one page to bootAPs code
@@ -342,10 +345,13 @@ page_init(void)
 	    pages[i].pp_link = NULL;
 	    continue;
 	  }
-	    pages[i].pp_ref = 0;
-	    pages[i].pp_link = page_free_list;
-	    page_free_list = &pages[i];
+
+	  pages[i].pp_ref = 0;
+	  pages[i].pp_link = page_free_list;
+	  page_free_list = &pages[i];
 	}
+	cprintf("page_init i : %d\n", i);
+	cprintf("page_init after i : %d\n", EXTPHYSMEM / PGSIZE);
 	// 3. EXTPHYMem some in use some is free
 	// kernel is in 0x10000 base address
 	// end -> pointes to the end of the kernel
@@ -354,12 +360,15 @@ page_init(void)
 		pages[i].pp_ref = 0;
 		pages[i].pp_link = NULL;
 	}	
+	cprintf("page_init i : %d\n", i);
 	// 4. the rest of EXTPHYMEM are free just link and set parameters
 	for( i ; i < npages; i++){
 		pages[i].pp_ref = 0;
 		pages[i].pp_link = page_free_list;
 		page_free_list = &pages[i];
 	}	
+	cprintf("page_init i : %d\n", i);
+	cprintf("page_ref i : %d\n", pages[164].pp_ref);
 
 }
 
@@ -387,7 +396,7 @@ page_alloc(int alloc_flags)
 			page_free_list = page_free_list->pp_link;
 			char *pg_addr = (char *)page2kva(pg_info);
 			pg_info->pp_link = NULL;
-			pg_info->pp_ref = 0;/* FIXME:  */
+			// pg_info->pp_ref = 0;/* FIXME:  */
 			// Physical Page
 			memset(pg_addr, '\0' , PGSIZE);
 			return pg_info;
@@ -395,7 +404,7 @@ page_alloc(int alloc_flags)
 	}else{
 			page_free_list = page_free_list->pp_link;
 			pg_info->pp_link = NULL;
-			pg_info->pp_ref = 0;/* FIXME:  */
+			//pg_info->pp_ref = 0;/* FIXME:  */
 			return pg_info;
 	}
 	
