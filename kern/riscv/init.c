@@ -17,6 +17,7 @@
 #include <kern/riscv/clint.h>
 #include <kern/riscv/spinlock.h>
 #include <kern/riscv/sched.h>
+#include <kern/riscv/time.h>
 
 static void boot_aps(void);
 
@@ -67,6 +68,10 @@ riscv_init(unsigned int hartid)
 
 	// enable timer interrupts and etc.
 	clint_init();
+
+	// pci and time init
+	time_init();
+	
 	// lock kernel
 	lock_kernel();
 
@@ -75,6 +80,11 @@ riscv_init(unsigned int hartid)
 
         // Start fs.
         ENV_CREATE(fs_fs, ENV_TYPE_FS);
+
+#if !defined(TEST_NO_NS)
+	// Start ns.
+	ENV_CREATE(net_ns, ENV_TYPE_NS);
+#endif
 
 #if defined (TEST)
 	// Don't touch !

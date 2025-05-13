@@ -278,6 +278,8 @@ grade:
 	  (echo "'make clean' failed.  HINT: Do you have another running instance of JOS?" && exit 1)
 	./grade-lab$(LAB) $(GRADEFLAGS)
 
+# For test runs
+prep-net_%: override INIT_CFLAGS+=-DTEST_NO_NS
 
 prep-%:
 	$(V)$(MAKE) "INIT_CFLAGS=${INIT_CFLAGS} -DTEST=`case $* in *_*) echo $*;; *) echo user_$*;; esac`" $(IMAGES)
