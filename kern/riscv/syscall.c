@@ -12,6 +12,7 @@
 #include <kern/riscv/syscall.h>
 #include <kern/riscv/console.h>
 #include <kern/riscv/sched.h>
+#include <kern/riscv/time.h>
 
 #define debug 0
 // Print a string to the system console.
@@ -588,6 +589,16 @@ sys_enable_irq(void){
   return 0;
 }
 
+// Return the current time.
+static int
+sys_time_msec(void)
+{
+	// LAB 6: Your code here.
+	return time_msec();
+	//panic("sys_time_msec not implemented");
+}
+
+
 // Dispatches to the correct kernel function, passing the arguments.
 int32_t
 syscall(uint64_t syscallno, uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4, uint64_t a5)
@@ -617,6 +628,7 @@ syscall(uint64_t syscallno, uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4, 
 	case SYS_copy_shared_pages: ret = sys_copy_shared_pages((envid_t)a1); break;
 	case SYS_disable_irq: ret = sys_disable_irq(); break;
 	case SYS_enable_irq: ret = sys_enable_irq(); break;
+	case SYS_time_msec: ret = sys_time_msec(); break;
 
 	default:
 		return -E_INVAL;

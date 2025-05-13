@@ -34,6 +34,7 @@ KERN_SRCFILES :=	kern/riscv/entry.S \
 			kern/riscv/spinlock.c \
 			kern/riscv/sched.c \
 			kern/riscv/clint.c \
+			kern/riscv/time.c \
 			kern/riscv/mpconfig.c 
 
 # Binary program images to embed within the kernel.
@@ -84,6 +85,9 @@ KERN_BINFILES +=	user/testpteshare \
 			user/testpiperace2 \
 			user/primespipe \
 			user/testshell
+
+# Binary files for LAB6
+KERN_BINFILES +=	user/testtime 
 
 # Only build files if they exist.
 KERN_SRCFILES := $(wildcard $(KERN_SRCFILES))

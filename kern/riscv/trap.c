@@ -13,6 +13,7 @@
 #include <kern/riscv/sched.h>
 #include <kern/riscv/spinlock.h>
 #include <kern/riscv/clint.h>
+#include <kern/riscv/time.h>
 
 
 /* For debugging, so print_trapframe can distinguish between printing
@@ -166,6 +167,7 @@ trap_dispatch(struct Trapframe *tf)
 	      csr_clear(CSR_SIE, MIP_STIP);
 	      // reset the mtimecmp register
 	      reset_timer();/* FIXME:  interrupt nested */
+	      time_tick();
 	      // sched
 	      sched_yield(1);
 	    default:

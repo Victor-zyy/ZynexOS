@@ -146,3 +146,9 @@ int
 sys_enable_irq(void){
         return syscall(SYS_enable_irq, 0, 0, 0, 0, 0, 0);
 }
+
+unsigned int
+sys_time_msec(void)
+{
+	return (unsigned int) syscall(SYS_time_msec, 0, 0, 0, 0, 0, 0);
+}
