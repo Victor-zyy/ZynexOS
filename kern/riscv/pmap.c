@@ -807,7 +807,7 @@ mmio_map_region(physaddr_t pa, size_t size)
 	result = nextfree;
 	if(ROUNDUP(base + size, PGSIZE) > MMIOLIM)
 		panic("mmio_map_region overflow MMIOLIM");
-	boot_map_region(kern_pgdir, (uintptr_t )result, ROUNDUP(size, PGSIZE), pa, PTE_W | PTE_R | PTE_IO);
+	boot_map_region(kern_pgdir, (uintptr_t )result, ROUNDUP(size, PGSIZE), pa, PTE_W | PTE_R | PTE_V | PTE_MEM);
 	
 	nextfree += ROUNDUP(size, PGSIZE); 
 	//panic("mmio_map_region not implemented");

@@ -8,7 +8,7 @@
 
 // Flag to do "lspci" at bootup
 static int pci_show_devs = 1;
-static int pci_show_addrs = 0;
+static int pci_show_addrs = 1;
 
 
 // Forward declarations
@@ -128,6 +128,8 @@ pci_scan_bus(struct pci_bus *bus)
 	memset(&df, 0, sizeof(df));
 	df.bus = bus;
 
+	// 8bit for bus (256) bus
+	// 5bit for dev (32) 3 bit for func (8)
 	for (df.dev = 0; df.dev < 32; df.dev++) {
 		uint32_t bhlc = pci_conf_read(&df, PCI_BHLC_REG);
 		if (PCI_HDRTYPE_TYPE(bhlc) > 1)	    // Unsupported or no device
@@ -204,6 +206,9 @@ pci_func_enable(struct pci_func *f)
 		pci_conf_write(f, bar, 0xffffffff);
 		uint32_t rv = pci_conf_read(f, bar);
 
+		// after setting all 1 to the BAR regs
+		// and then re-read it will give the MAP_REG_TYPE
+		// if the rv is zero, then the bar reg is useless
 		if (rv == 0)
 			continue;
 
@@ -215,12 +220,17 @@ pci_func_enable(struct pci_func *f)
 
 			size = PCI_MAPREG_MEM_SIZE(rv);
 			base = PCI_MAPREG_MEM_ADDR(oldv);
+			// for arch of riscv
+			base = 0x40000000;
+			oldv = 0x40000000;
 			if (pci_show_addrs)
 				cprintf("  mem region %d: %d bytes at 0x%x\n",
 					regnum, size, base);
 		} else {
 			size = PCI_MAPREG_IO_SIZE(rv);
 			base = PCI_MAPREG_IO_ADDR(oldv);
+			base = 0x3000000;
+			oldv = 0x3000000;
 			if (pci_show_addrs)
 				cprintf("  io region %d: %d bytes at 0x%x\n",
 					regnum, size, base);

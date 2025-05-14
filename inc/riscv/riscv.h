@@ -181,7 +181,7 @@ breakpoint(void)
 static inline uint32_t
 read_w(uint64_t addr){
   uint32_t val;
-  asm volatile("ld %0, (%1)"
+  asm volatile("lw %0, (%1)"
 	       : "=r"(val)
 	       : "r"(addr)
 	       : "memory");
@@ -190,7 +190,7 @@ read_w(uint64_t addr){
 
 static inline void
 write_w(uint64_t addr, uint32_t data){
-  asm volatile("sd %1, (%0)\n"
+  asm volatile("sw %1, (%0)\n"
 	       :
 	       :"r"(addr), "r"(data)
 	       :"memory");
