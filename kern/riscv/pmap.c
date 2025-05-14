@@ -52,6 +52,7 @@ riscv_detect_memory(void)
 
 static void mem_init_mp(void);
 static void flash_map_init(void);
+static void pcie_ecam_map_init(void);
 static void boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, uint64_t perm);
 static void check_page_free_list(bool only_low_memory);
 static void check_page_alloc(void);
@@ -227,7 +228,8 @@ mem_init(void)
 
 	// Initialize the flash mapping for use
 	flash_map_init();
-
+	// Initialize the ecam mapping for use
+	pcie_ecam_map_init();
 	// 256MB for kernel
 	boot_map_region(kern_pgdir, KERNBASE + 0x80000000,  2 * PGSIZE * npages, 0x80000000, PTE_X | PTE_W | PTE_R | PTE_G);
 
@@ -296,6 +298,12 @@ flash_map_init()
   boot_map_region(kern_pgdir, FLASH_MAP_ADDR, FS_FLASH_SIZE, FS_FLASH_ADDR, PTE_W | PTE_R | PTE_U | PTE_V);
 }
 
+#define PCIE_ECAM_ADDR 0x30000000
+static void
+pcie_ecam_map_init()
+{
+  boot_map_region(kern_pgdir, PCIE_MAP_ECAM_ADDR, PCIE_MAP_ECAM_SIZE, PCIE_ECAM_ADDR, PTE_W | PTE_R | PTE_V);
+}
 // --------------------------------------------------------------
 // Tracking of physical pages.
 // The 'pages' array has one 'struct PageInfo' entry per physical page.
@@ -330,13 +338,10 @@ page_init(void)
 	// pp_link = NULL;
 	size_t i = 0;
 	// 1. page 0 is in use
-	cprintf("page_init start i : %d\n", i);
 	for(i = 0; i < firmmem / PGSIZE; i++){
 	    pages[i].pp_ref = 0;
 	    pages[i].pp_link = NULL;
 	};
-	cprintf("page_init i : %d\n", i);
-	cprintf("page_init after i : %d\n", firmmem / PGSIZE);
 	// 2. opensbi upwards mem is free
 	for(i = firmmem / PGSIZE; i < npages_basemem; i++){
 	  // we ask for one page to bootAPs code
@@ -350,8 +355,6 @@ page_init(void)
 	  pages[i].pp_link = page_free_list;
 	  page_free_list = &pages[i];
 	}
-	cprintf("page_init i : %d\n", i);
-	cprintf("page_init after i : %d\n", EXTPHYSMEM / PGSIZE);
 	// 3. EXTPHYMem some in use some is free
 	// kernel is in 0x10000 base address
 	// end -> pointes to the end of the kernel
@@ -360,15 +363,12 @@ page_init(void)
 		pages[i].pp_ref = 0;
 		pages[i].pp_link = NULL;
 	}	
-	cprintf("page_init i : %d\n", i);
 	// 4. the rest of EXTPHYMEM are free just link and set parameters
 	for( i ; i < npages; i++){
 		pages[i].pp_ref = 0;
 		pages[i].pp_link = page_free_list;
 		page_free_list = &pages[i];
 	}	
-	cprintf("page_init i : %d\n", i);
-	cprintf("page_ref i : %d\n", pages[164].pp_ref);
 
 }
 

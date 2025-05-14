@@ -35,6 +35,8 @@ KERN_SRCFILES :=	kern/riscv/entry.S \
 			kern/riscv/sched.c \
 			kern/riscv/clint.c \
 			kern/riscv/time.c \
+			kern/riscv/pci.c \
+			kern/riscv/e1000.c \
 			kern/riscv/mpconfig.c 
 
 # Binary program images to embed within the kernel.

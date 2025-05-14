@@ -178,4 +178,21 @@ breakpoint(void)
 	asm volatile("ebreak");
 }
 
+static inline uint32_t
+read_w(uint64_t addr){
+  uint32_t val;
+  asm volatile("ld %0, (%1)"
+	       : "=r"(val)
+	       : "r"(addr)
+	       : "memory");
+  return val;
+}
+
+static inline void
+write_w(uint64_t addr, uint32_t data){
+  asm volatile("sd %1, (%0)\n"
+	       :
+	       :"r"(addr), "r"(data)
+	       :"memory");
+}
 #endif /* !_INC_RISCV_H */

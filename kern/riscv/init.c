@@ -18,6 +18,7 @@
 #include <kern/riscv/spinlock.h>
 #include <kern/riscv/sched.h>
 #include <kern/riscv/time.h>
+#include <kern/riscv/pci.h>
 
 static void boot_aps(void);
 
@@ -65,13 +66,13 @@ riscv_init(unsigned int hartid)
 	mp_init(hartid);
 	lapic_init();
 
-
+	// pci and time init
+	time_init();
+	pci_init();
+	
 	// enable timer interrupts and etc.
 	clint_init();
 
-	// pci and time init
-	time_init();
-	
 	// lock kernel
 	lock_kernel();
 

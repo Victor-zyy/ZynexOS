@@ -139,6 +139,9 @@
 // Just one Page for mpentry code
 #define MPENTRY_PADDR	0x80100000
 #define FLASH_MAP_ADDR  0xfffff00000000000
+//[VIRT_PCIE_ECAM] =   { 0x30000000,    0x10000000 }, 256MB
+#define PCIE_MAP_ECAM_SIZE   0x10000000
+#define PCIE_MAP_ECAM_ADDR   0xfffff00030000000
 
 #ifndef __ASSEMBLER__
 
