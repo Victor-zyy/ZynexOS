@@ -68,6 +68,9 @@ int     sys_copy_shared_pages(envid_t child);
 int     sys_disable_irq(void);
 int     sys_enable_irq(void);
 unsigned int sys_time_msec(void);
+int sys_pack_send(const char *data, int len);
+int sys_pack_recv(const char *data, int *len);
+
 // This must be inlined.  Exercise for reader: why?
 // don't let the sys_exofork has stack pushes or pop etc.
 // always inline means ecall like insert instruction

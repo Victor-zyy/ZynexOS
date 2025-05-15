@@ -65,7 +65,7 @@ transmit_init()
 	// Step 2. set TDBAL 32-bit address
 	e1000[E1000_TDBAL] = (uint32_t)PADDR(tx_desc_buffer);
 	e1000[E1000_TDBAH] = 0;
-	cprintf("tx_desc_buffer addr : 0x%08x\n", tx_desc_buffer);
+	cprintf("tx_desc_buffer addr : 0x%08lx\n", tx_desc_buffer);
 	// Step 3. set TDLEN the size of the descriptor ring in bytes ( 128-byte aligned)
 	e1000[E1000_TDLEN] = sizeof(struct tx_desc) * tx_desc_len;
 	// Step 4. write 0b to both the TDH/TDT to ensure the registers are initialized
@@ -160,7 +160,7 @@ receive_init()
 	// then set the RDBAL/RDBAH reg
 	e1000[E1000_RDBAL] = (uint32_t)PADDR(rx_desc_buffer);
 	e1000[E1000_RDBAH] = 0;
-	cprintf("rx_desc_buffer addr : 0x%08x\n", rx_desc_buffer);
+	cprintf("rx_desc_buffer addr : 0x%08lx\n", rx_desc_buffer);
 	// Step 5. set the RDLEN reg to the size of the descriptor ring
 	// must be 128-byte aligned in bytes
 	e1000[E1000_RDLEN] = rx_desc_len * sizeof(struct rx_desc);

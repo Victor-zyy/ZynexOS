@@ -152,3 +152,15 @@ sys_time_msec(void)
 {
 	return (unsigned int) syscall(SYS_time_msec, 0, 0, 0, 0, 0, 0);
 }
+
+int
+sys_pack_send(const char *data, int len)
+{
+	return (int)syscall(SYS_pack_send, 1, (uint64_t)data, (uint64_t)len, 0, 0, 0);
+}
+int
+sys_pack_recv(const char *data, int *len)
+{
+	//return (int)syscall(SYS_pack_recv, 0, (uint32_t)data, (uint32_t)len, 0, 0, 0);
+	return (int)syscall(SYS_pack_recv, 1, (uint64_t)data, (uint64_t)len, 0, 0, 0);
+}

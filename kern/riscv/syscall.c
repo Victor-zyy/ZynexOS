@@ -13,6 +13,7 @@
 #include <kern/riscv/console.h>
 #include <kern/riscv/sched.h>
 #include <kern/riscv/time.h>
+#include <kern/riscv/e1000.h>
 
 #define debug 0
 // Print a string to the system console.
@@ -598,6 +599,58 @@ sys_time_msec(void)
 	//panic("sys_time_msec not implemented");
 }
 
+// transmit packet from user space
+static int
+sys_pack_send(const char *data, int len)
+{
+	int r;
+	// Step 1. do some necessary check
+	//
+	//cprintf("curenv : %x data addr : 0x%08x len : %d\n", curenv->env_id, data, len);
+	user_mem_assert(curenv, (void *)data, len, PTE_U);
+
+	if((uintptr_t)data >= UTOP || (uintptr_t)(data + len) >= UTOP)	
+		return -E_INVAL;
+
+	// Step 2. send packet through Ethercard
+	// for debug
+	//hexdump("ARP:  ", data, len);
+	r = transmit_pack(data, len);
+	if(r == -E_NO_MEM){
+
+	}
+	if(r < 0){
+		panic("sys_pack_send error : %e \n", r);
+	}
+
+	return r;
+}
+// transmit packet from user space
+static int
+sys_pack_recv(const char *data, int *len)
+{
+	int r;
+	// Step 1. do some necessary check
+	//user_mem_assert(curenv, (void *)data, PGSIZE, PTE_U);
+	// simple check it will be prone to damage
+	//if((uintptr_t)data >= UTOP || (uintptr_t)(data + PGSIZE) >= UTOP)	
+	if((uintptr_t)data >= UTOP)	
+		return -E_INVAL;
+
+	// Step 2. send packet through Ethercard
+	// for debug
+	//hexdump("ARP:  ", data, len);
+	r = receive_pack(data, len);
+	if(r == -E_NO_MEM){
+		//sched_yield();
+		return -E_WAIT;
+	}
+	if(r < 0){
+		panic("sys_pack_recv error : %e \n", r);
+	}
+
+	return r;
+}
 
 // Dispatches to the correct kernel function, passing the arguments.
 int32_t
@@ -629,6 +682,8 @@ syscall(uint64_t syscallno, uint64_t a1, uint64_t a2, uint64_t a3, uint64_t a4, 
 	case SYS_disable_irq: ret = sys_disable_irq(); break;
 	case SYS_enable_irq: ret = sys_enable_irq(); break;
 	case SYS_time_msec: ret = sys_time_msec(); break;
+	case SYS_pack_send: ret = sys_pack_send((const char *)a1, (int)a2); break;
+	case SYS_pack_recv: ret = sys_pack_recv((const char *)a1, (int *)a2); break;
 
 	default:
 		return -E_INVAL;

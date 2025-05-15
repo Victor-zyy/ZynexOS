@@ -23,6 +23,8 @@ enum {
 	SYS_disable_irq,
 	SYS_enable_irq,
 	SYS_time_msec,
+	SYS_pack_send,
+	SYS_pack_recv,
 	NSYSCALLS
 };
 
