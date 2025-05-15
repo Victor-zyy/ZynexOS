@@ -75,7 +75,7 @@
 #define PTE_D		0x080	// Dirty
 #define PTE_IO          0x4000000000000000    // IO cache disable strong memory-consistence
 #define PTE_MEM         0x2000000000000000    // normal memeory cache disable thin memory-consistence
-#define PTE_N           0x8000000000000000 // Sequential entry
+#define PTE_N           0x8000000000000000    // Sequential entry
 
 // The PTE_AVAIL bits aren't used by the kernel or interpreted by the
 // hardware, so user processes are allowed to set them arbitrarily.
