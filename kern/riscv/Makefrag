@@ -89,7 +89,14 @@ KERN_BINFILES +=	user/testpteshare \
 			user/testshell
 
 # Binary files for LAB6
-KERN_BINFILES +=	user/testtime 
+KERN_BINFILES +=	user/testtime \
+			user/httpd \
+			user/echosrv \
+			user/echotest 
+
+KERN_NETBINFILES :=	net/testoutput \
+			net/testinput \
+			net/ns
 
 # Only build files if they exist.
 KERN_SRCFILES := $(wildcard $(KERN_SRCFILES))
@@ -100,7 +107,8 @@ KERN_OBJFILES := $(patsubst %.S, $(OBJDIR)/kern/%.o, $(KERN_OBJFILES))
 
 KERN_OBJFILES := $(patsubst $(OBJDIR)/lib/%, $(OBJDIR)/kern/%, $(KERN_OBJFILES))
 
-KERN_BINFILES := $(patsubst %, $(OBJDIR)/user/%, $(notdir $(KERN_BINFILES)))
+KERN_BINFILES    := $(patsubst %, $(OBJDIR)/user/%, $(notdir $(KERN_BINFILES)))
+KERN_NETBINFILES := $(patsubst %, $(OBJDIR)/net/%, $(notdir $(KERN_NETBINFILES)))
 
 # How to build kernel object files
 $(OBJDIR)/kern/%.o: kern/riscv/%.c $(OBJDIR)/.vars.KERN_CFLAGS
@@ -124,10 +132,10 @@ $(OBJDIR)/kern/init.o: override KERN_CFLAGS+=$(INIT_CFLAGS)
 $(OBJDIR)/kern/init.o: $(OBJDIR)/.vars.INIT_CFLAGS
 
 # How to build the kernel itself
-$(OBJDIR)/kern/kernel: $(KERN_OBJFILES) $(KERN_BINFILES) $(OBJDIR)/fs/fs kern/riscv/kernel.ld \
+$(OBJDIR)/kern/kernel: $(KERN_OBJFILES)  $(KERN_NETBINFILES) $(KERN_BINFILES) $(OBJDIR)/fs/fs kern/riscv/kernel.ld \
 	  $(OBJDIR)/.vars.KERN_LDFLAGS
 	@echo + ld $@
-	$(V)$(LD) -o $@ $(KERN_LDFLAGS) $(KERN_OBJFILES) $(GCC_LIB) -b elf64-littleriscv $(OBJDIR)/fs/fs_ $(foreach fo, $(KERN_BINFILES), $(addsuffix _,$(fo))) 
+	$(V)$(LD) -o $@ $(KERN_LDFLAGS) $(KERN_OBJFILES) $(GCC_LIB) -b elf64-littleriscv $(OBJDIR)/fs/fs_ $(foreach fo, $(KERN_BINFILES), $(addsuffix _,$(fo))) $(foreach fo, $(KERN_NETBINFILES), $(addsuffix _,$(fo)))
 	$(V)$(OBJDUMP) -S $@ > $@.asm
 	$(V)$(NM) -n $@ > $@.sym
 

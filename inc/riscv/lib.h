@@ -19,6 +19,8 @@
 #include <inc/riscv/fs.h>
 #include <inc/riscv/fd.h>
 #include <inc/riscv/args.h>
+#include <inc/riscv/malloc.h>
+#include <inc/riscv/ns.h>
 
 #define USED(x)		(void)(x)
 
@@ -108,6 +110,24 @@ int	sync(void);
 // pageref.c
 int	pageref(void *addr);
 
+// sockets.c
+int     accept(int s, struct sockaddr *addr, socklen_t *addrlen);
+int     bind(int s, struct sockaddr *name, socklen_t namelen);
+int     shutdown(int s, int how);
+int     connect(int s, const struct sockaddr *name, socklen_t namelen);
+int     listen(int s, int backlog);
+int     socket(int domain, int type, int protocol);
+
+// nsipc.c
+int     nsipc_accept(int s, struct sockaddr *addr, socklen_t *addrlen);
+int     nsipc_bind(int s, struct sockaddr *name, socklen_t namelen);
+int     nsipc_shutdown(int s, int how);
+int     nsipc_close(int s);
+int     nsipc_connect(int s, const struct sockaddr *name, socklen_t namelen);
+int     nsipc_listen(int s, int backlog);
+int     nsipc_recv(int s, void *mem, int len, unsigned int flags);
+int     nsipc_send(int s, const void *buf, int size, unsigned int flags);
+int     nsipc_socket(int domain, int type, int protocol);
 
 // spawn.c
 envid_t	spawn(const char *program, const char **argv);

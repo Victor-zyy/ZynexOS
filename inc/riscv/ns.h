@@ -3,8 +3,8 @@
 #ifndef JOS_INC_NS_H
 #define JOS_INC_NS_H
 
-#include <inc/types.h>
-#include <inc/mmu.h>
+#include <inc/riscv/types.h>
+#include <inc/riscv/mmu.h>
 #include <lwip/sockets.h>
 
 struct jif_pkt {
