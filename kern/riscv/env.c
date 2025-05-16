@@ -228,12 +228,16 @@ env_alloc(struct Env **newenv_store, envid_t parent_id)
 	// In order to handler the kernel stack, we use tp to pointed the env it self
 	// When the context is switched , then the tp is pointed another env of itself
 	e->env_tf.tp = (unsigned long)e; 
-
+	
+	// Clear the user page fault handler until the user installs one
+	e->env_pgfault_upcall = 0;
+	// also clear the IPC recving flags
+	e->env_ipc_recving = 0;
 	// commit the allocation
 	env_free_list = e->env_link;
 	*newenv_store = e;
 
-	//cprintf("[%08x] new env %08x\n", curenv ? curenv->env_id : 0, e->env_id);
+	cprintf("[%08x] new env %08x\n", curenv ? curenv->env_id : 0, e->env_id);
 	return 0;
 }
 
@@ -423,7 +427,7 @@ env_free(struct Env *e)
 	  load_satp_asid(PADDR(kern_pgdir), 0);
 
 	// Note the environment's demise.
-	//cprintf("[%08x] free env %08x\n", curenv ? curenv->env_id : 0, e->env_id);
+	cprintf("[%08x] free env %08x\n", curenv ? curenv->env_id : 0, e->env_id);
 
 	// Flush all mapped pages in the user portion of the address space
 	static_assert(UTOP % PTSIZE == 0);
@@ -568,10 +572,10 @@ env_run(struct Env *e)
 	// LAB 3: Your code here.
 	// Step 1:
 	if(curenv != NULL){
-		// a context switch
+	  // a context switch  /* FIXME: fix bug of ENV_NOT_RUNNABLE -> ENV_RUNABLE */
+	  if (curenv->env_status == ENV_RUNNING) {
 		curenv->env_status = ENV_RUNNABLE;
-	}else{
-		// first initialization
+	  }
 	}
 	curenv = e;
 	curenv->env_status = ENV_RUNNING;

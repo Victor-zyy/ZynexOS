@@ -70,8 +70,6 @@ riscv_init(unsigned int hartid)
 	time_init();
 	pci_init();
 	
-	// enable timer interrupts and etc.
-	clint_init();
 
 	// lock kernel
 	lock_kernel();
@@ -84,7 +82,7 @@ riscv_init(unsigned int hartid)
 
 #if !defined(TEST_NO_NS)
 	// Start ns.
-	ENV_CREATE(net_ns, ENV_TYPE_NS);
+	//ENV_CREATE(net_ns, ENV_TYPE_NS);
 #endif
 
 #if defined (TEST)
@@ -95,12 +93,14 @@ riscv_init(unsigned int hartid)
 	//ENV_CREATE(user_yield, ENV_TYPE_USER); /* FIXME: envid 0 */
 	//ENV_CREATE(user_hello, ENV_TYPE_USER); /* FIXME: envid 0 */
 	//ENV_CREATE(user_yield, ENV_TYPE_USER); /* FIXME: envid 0 */
-	ENV_CREATE(user_spawnhello, ENV_TYPE_USER); 
-	ENV_CREATE(user_spawnhello, ENV_TYPE_USER); 
-	ENV_CREATE(user_spawnhello, ENV_TYPE_USER); 
-	ENV_CREATE(user_spawnhello, ENV_TYPE_USER); 
-	ENV_CREATE(user_spawnhello, ENV_TYPE_USER); 
+	//ENV_CREATE(user_spawnhello, ENV_TYPE_USER); 
+	//ENV_CREATE(user_spawnhello, ENV_TYPE_USER); 
+	//ENV_CREATE(user_spawnhello, ENV_TYPE_USER); 
+	//ENV_CREATE(user_spawnhello, ENV_TYPE_USER); 
 #endif
+
+	// enable timer interrupts and etc.
+	clint_init();
 
 	sched_yield(0);
 }

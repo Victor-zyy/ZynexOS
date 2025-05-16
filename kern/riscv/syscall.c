@@ -455,11 +455,11 @@ static int
 sys_ipc_recv(void *dstva)
 {
 	// block
-	// cprintf("block recv get here\n");
 	if(curenv->env_ipc_recving){
-		curenv->env_status = ENV_NOT_RUNNABLE;
+	        curenv->env_status = ENV_NOT_RUNNABLE;
 		sched_yield(0);
 	}
+	//cprintf("after block recv get here\n");
 	// LAB 4: Your code here.
 	// Step 1. do some necessary checks
 	if((uint64_t)dstva < UTOP){

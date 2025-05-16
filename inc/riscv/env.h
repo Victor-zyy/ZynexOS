@@ -43,7 +43,7 @@ enum {
 	ENV_RUNNING,
 	ENV_NOT_RUNNABLE
 };
-
+/* FIXME: 0 1 2 3 4 */
 // Special environment types
 enum EnvType {
 	ENV_TYPE_USER = 0,
