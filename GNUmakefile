@@ -117,7 +117,7 @@ endif
 # mon_backtrace()'s function prologue on gcc version: (Debian 4.7.2-5) 4.7.2
 CFLAGS += -fno-tree-ch
 
-#CFLAGS += -I$(TOP)/net/lwip/include \
+CFLAGS += -I$(TOP)/net/lwip/include \
 	  -I$(TOP)/net/lwip/include/ipv4 \
 	  -I$(TOP)/net/lwip/jos
 CFLAGS += -I$(TOP)/
@@ -180,7 +180,7 @@ include kern/$(ARCH)/Makefrag
 include lib/$(ARCH)/Makefrag
 include user/$(ARCH)/Makefrag
 include fs/Makefrag
-#include net/Makefrag
+include net/Makefrag
 
 
 CPUS ?= 1
@@ -199,7 +199,10 @@ QEMUOPTS += -drive if=pflash,unit=0,format=raw,file=$(OBJDIR)/kern/kernel.img
 
 IMAGES = $(OBJDIR)/kern/kernel.img
 
-QEMUOPTS += -netdev user,id=n1,ipv6=off -device e1000,netdev=n1,mac=52:54:98:76:54:32 -nic user,hostfwd=tcp::$(PORT7)-:7 -nic user,hostfwd=tcp::$(PORT80)-:80 -nic user,hostfwd=udp::$(PORT7)-:7 -object filter-dump,id=id,netdev=n1,file=qemu.pcap #refer to qemu-options.hx in qemu-7.0.0
+QEMUOPTS += -netdev user,id=net0,ipv6=off,hostfwd=tcp::$(PORT7)-:7,hostfwd=tcp::$(PORT80)-:80,hostfwd=udp::$(PORT7)-:7 -device e1000,netdev=net0,mac=52:54:00:12:34:56
+#mac=52:54:98:76:54:32 
+# redirection of network port
+QEMUOPTS += -object filter-dump,id=netdump0,netdev=net0,file=qemu.pcap #refer to qemu-options.hx in qemu-7.0.0
 QEMUOPTS += $(QEMUEXTRA)
 
 
