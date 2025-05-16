@@ -10,10 +10,10 @@
 ENTRY(jos_setjmp)
 	// a0 is jos_jmp_buf
 
-	ld	t0,	(sp)     // ra is pushed by call
-	sd	t0, 	JB_RA(a0)
+	// ra is stored by jal instruction
+	sd	ra, 	JB_RA(a0)
 	
-	addi	sp,	sp, 8    // where sp will point when we return
+	// where sp will point when we return
 	sd	sp,	JB_SP(a0)
 
 	// save other regs of contexts 
