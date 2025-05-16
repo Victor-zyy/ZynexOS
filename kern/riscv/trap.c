@@ -203,6 +203,8 @@ trap_dispatch(struct Trapframe *tf)
    }
 
    // Unexpected trap: The user process or the kernel has a bug.
+
+    cprintf("envid : 0x%x \n", curenv->env_id);
     mon_backtrace(0, NULL, tf);
     print_trapframe(tf);
 

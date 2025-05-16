@@ -82,7 +82,7 @@ riscv_init(unsigned int hartid)
 
 #if !defined(TEST_NO_NS)
 	// Start ns.
-	//ENV_CREATE(net_ns, ENV_TYPE_NS);
+	ENV_CREATE(net_ns, ENV_TYPE_NS);
 #endif
 
 #if defined (TEST)
