@@ -56,3 +56,9 @@ One process run the command down below, another process run `make nc-80` or usin
 make run-httpd-nox
 http://ubuntu:26002/index.html
 ```
+
+
+* ZynexOS
+
+The project ZynexOS!
+![ZynexOS image](./image/zynexOS.png "zynexos")
